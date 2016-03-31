@@ -51,14 +51,12 @@ func (bot *Bot) GetMe() (*User, error) {
 		fmt.Println(err)
 	}
 	var bs BotStatus
-	err = json.Unmarshal(body, &bs)
-	if err != nil {
-		fmt.Errorf("tbot: invalid token")
-	}
+
+	bot.parseResult(body, &bs)
 	if bs.Ok {
 		return bs.Result, nil
 	} else {
-		return &User{}, fmt.Errorf("bot status is not OK, reason: " + bs.Description)
+		return nil, fmt.Errorf("bot status is not OK, reason: " + bs.Description)
 	}
 }
 
