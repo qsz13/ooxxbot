@@ -7,10 +7,27 @@ type User struct {
 	UserName  string `json:"username"`
 }
 
+type Chat struct {
+	ID        int    `json:"id"`
+	Type      string `json:"type"`
+	Title     string `json:"title"`
+	Username  string `json:"username"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+}
+type Audio struct {
+}
+
 type Message struct {
-	ID   int  `json:"message_id"`
-	From User `json:"from"`
-	Date int  `json:"date"`
+	ID             int      `json:"message_id"`
+	From           *User    `json:"from"`
+	Date           int      `json:"date"`
+	Chat           *Chat    `json:"chat"`
+	ForwardFrom    *User    `json:"forward_from"`
+	ForwardDate    int      `json:"forward_date"`
+	ReplyToMessage *Message `json:"reply_to_message"`
+	text           string   `json:"text"`
+	audio          *Audio   `json:"Audio"`
 }
 
 type InlineQuery struct {
@@ -20,10 +37,10 @@ type ChosenInlineResult struct {
 }
 
 type Update struct {
-	ID                 int                `json:"update_id"`
-	Message            Message            `json:"message"`
-	InlineQuery        InlineQuery        `json:"inline_query"`
-	ChosenInlineResult ChosenInlineResult `json:"chosen_inline_result"`
+	ID                 int                 `json:"update_id"`
+	Message            *Message            `json:"message"`
+	InlineQuery        *InlineQuery        `json:"inline_query"`
+	ChosenInlineResult *ChosenInlineResult `json:"chosen_inline_result"`
 }
 
 type ResultBase struct {
