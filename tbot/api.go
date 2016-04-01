@@ -79,7 +79,7 @@ func (bot *Bot) sendMessage(
 	if mr.Ok {
 		return mr.Result, nil
 	} else {
-		return nil, fmt.Errorf("bot status is not OK, reason: " + mr.Description)
+		return nil, fmt.Errorf("Message failed, reason: " + mr.Description)
 	}
 
 }

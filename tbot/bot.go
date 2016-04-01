@@ -2,9 +2,11 @@ package tbot
 
 import (
 	"fmt"
+	jd "github.com/qsz13/ooxxbot/jandan"
 	rc "github.com/qsz13/ooxxbot/requestclient"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 type Bot struct {
@@ -58,14 +60,31 @@ func (bot *Bot) ReplyText(ChatID int, Text string) {
 
 }
 
+func (bot *Bot) ReplyHTML(ChatID int, html string) {
+	bot.sendMessage(ChatID, html, "HTML", false, false, -1)
+
+}
+
 func (bot *Bot) ExecCmd(message *Message) {
-	switch message.Text {
+	cmd := strings.ToLower(message.Text)
+	switch cmd {
+	case "/start":
+		go bot.getHelp(message)
 	case "/ip":
 		go bot.getIP(message)
 		break
-
+	case "/ooxx":
+		go bot.getOOXX(message)
+	default:
+		bot.ReplyText(message.Chat.ID, "Incorrect, idiot!")
 	}
 
+}
+
+func (bot *Bot) getHelp(message *Message) {
+	help := "/ip to check IP\n/ooxx to get latest ooxx"
+
+	bot.ReplyText(message.Chat.ID, help)
 }
 
 func (bot *Bot) getIP(message *Message) {
@@ -83,4 +102,10 @@ func (bot *Bot) getIP(message *Message) {
 	ip := string(body)
 	bot.ReplyText(message.Chat.ID, ip)
 
+}
+
+func (bot *Bot) getOOXX(message *Message) {
+	html := jd.GetLatestOOXX().Content
+	bot.ReplyText(message.Chat.ID, html)
+	fmt.Println(html)
 }

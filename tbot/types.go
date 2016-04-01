@@ -43,23 +43,23 @@ type Update struct {
 	ChosenInlineResult *ChosenInlineResult `json:"chosen_inline_result"`
 }
 
-type ResultBase struct {
+type BotStatus struct {
 	Ok          bool
 	Description string
 	ErrorCode   int `json:"error_code"`
-}
-
-type BotStatus struct {
-	ResultBase
-	Result *User
+	Result      *User
 }
 
 type UpdateResult struct {
-	ResultBase
-	Result []Update
+	Ok          bool
+	Description string
+	ErrorCode   int `json:"error_code"`
+	Result      []Update
 }
 
 type MessageResult struct {
-	ResultBase
-	Result *Message
+	Ok          bool
+	Description string
+	ErrorCode   int `json:"error_code"`
+	Result      *Message
 }
