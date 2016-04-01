@@ -58,3 +58,8 @@ type UpdateResult struct {
 	ResultBase
 	Result []Update
 }
+
+type MessageResult struct {
+	ResultBase
+	Result *Message
+}

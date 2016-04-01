@@ -23,5 +23,6 @@ func main() {
 func handleMessages(bot *tbot.Bot) {
 	for message := range bot.Messages {
 		fmt.Println(message.Text)
+		bot.ReplyText(message.Chat.ID, "great!")
 	}
 }

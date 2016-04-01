@@ -50,3 +50,9 @@ func (bot *Bot) loop(messages chan *Message, queries chan *InlineQuery) {
 		lastUpdate = maxid + 1
 	}
 }
+
+func (bot *Bot) ReplyText(ChatID int, Text string) {
+
+	bot.sendMessage(ChatID, Text, "", false, false, -1)
+
+}
