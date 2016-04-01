@@ -26,8 +26,8 @@ type Message struct {
 	ForwardFrom    *User    `json:"forward_from"`
 	ForwardDate    int      `json:"forward_date"`
 	ReplyToMessage *Message `json:"reply_to_message"`
-	text           string   `json:"text"`
-	audio          *Audio   `json:"Audio"`
+	Text           string   `json:"text"`
+	Audio          *Audio   `json:"Audio"`
 }
 
 type InlineQuery struct {

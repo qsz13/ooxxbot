@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-func (bot *Bot) GetMe() (*User, error) {
+func (bot *Bot) getMe() (*User, error) {
 	params := make(map[string]string)
 	body, err := bot.sendRequest("getMe", params)
 
@@ -24,7 +24,7 @@ func (bot *Bot) GetMe() (*User, error) {
 	}
 }
 
-func (bot *Bot) GetUpdates(offset, limit, timeout int) ([]Update, error) {
+func (bot *Bot) getUpdates(offset, limit, timeout int) ([]Update, error) {
 	params := make(map[string]string)
 	params["offset"] = strconv.Itoa(offset)
 	if limit != 0 {
@@ -33,7 +33,6 @@ func (bot *Bot) GetUpdates(offset, limit, timeout int) ([]Update, error) {
 	if timeout != 0 {
 		params["timeout"] = strconv.Itoa(timeout)
 	}
-
 	body, err := bot.sendRequest("getUpdates", params)
 	if err != nil {
 		return nil, err
