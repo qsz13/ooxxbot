@@ -5,8 +5,8 @@ import (
 	"golang.org/x/net/proxy"
 	"net"
 	"net/http"
-	"time"
 	"net/url"
+	"time"
 )
 
 type ProxyType int
@@ -32,13 +32,13 @@ func GetClient(clientProxy *ClientProxy) (client *http.Client, err error) {
 		//TODO
 	} else if clientProxy.ProxyType == MANUAL_PROXY {
 		fmt.Println("manual proxy")
-		url,err:=url.Parse(clientProxy.URL)
-		if err!=nil {
+		url, err := url.Parse(clientProxy.URL)
+		if err != nil {
 			fmt.Println(err)
 			return nil, err
 		}
 		transport = &http.Transport{
-			Proxy:  http.ProxyURL(url),
+			Proxy: http.ProxyURL(url),
 		}
 	} else if clientProxy.ProxyType == SOCKS5_PROXY {
 		dialer, err := proxy.SOCKS5("tcp", clientProxy.URL, nil,
@@ -52,11 +52,11 @@ func GetClient(clientProxy *ClientProxy) (client *http.Client, err error) {
 			return nil, err
 		}
 		transport = &http.Transport{
-			Proxy:  nil,
+			Proxy: nil,
 			Dial:  dialer.Dial,
 		}
 	}
-	
+
 	client = &http.Client{Transport: transport}
 
 	return client, err
