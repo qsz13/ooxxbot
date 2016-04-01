@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"time"
+	"net/url"
 )
 
 type ProxyType int
@@ -23,15 +24,24 @@ type ClientProxy struct {
 }
 
 func GetClient(clientProxy *ClientProxy) (client *http.Client, err error) {
-	var dialer proxy.Dialer
+	var transport *http.Transport
+
 	if clientProxy == nil || clientProxy.ProxyType == NO_PROXY {
 		//TODO
 	} else if clientProxy.ProxyType == ENV_PROXY {
 		//TODO
 	} else if clientProxy.ProxyType == MANUAL_PROXY {
-
+		fmt.Println("manual proxy")
+		url,err:=url.Parse(clientProxy.URL)
+		if err!=nil {
+			fmt.Println(err)
+			return nil, err
+		}
+		transport = &http.Transport{
+			Proxy:  http.ProxyURL(url),
+		}
 	} else if clientProxy.ProxyType == SOCKS5_PROXY {
-		dialer, err = proxy.SOCKS5("tcp", clientProxy.URL, nil,
+		dialer, err := proxy.SOCKS5("tcp", clientProxy.URL, nil,
 			&net.Dialer{
 				Timeout:   30 * time.Second,
 				KeepAlive: 30 * time.Second,
@@ -41,12 +51,12 @@ func GetClient(clientProxy *ClientProxy) (client *http.Client, err error) {
 			fmt.Println(err)
 			return nil, err
 		}
+		transport = &http.Transport{
+			Proxy:  nil,
+			Dial:  dialer.Dial,
+		}
 	}
-
-	transport := &http.Transport{
-		Proxy: nil,
-		Dial:  dialer.Dial,
-	}
+	
 	client = &http.Client{Transport: transport}
 
 	return client, err
