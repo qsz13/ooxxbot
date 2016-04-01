@@ -31,7 +31,7 @@ func (bot *Bot) loop(messages chan *Message, queries chan *InlineQuery) {
 	lastUpdate := 0
 	for {
 
-		updates, err := bot.getUpdates(lastUpdate, 0, 1000) //TBD
+		updates, err := bot.getUpdates(lastUpdate+1, 0, 1000) //TBD
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -50,7 +50,7 @@ func (bot *Bot) loop(messages chan *Message, queries chan *InlineQuery) {
 			}
 
 		}
-		lastUpdate = maxid + 1
+		lastUpdate = maxid
 	}
 }
 
