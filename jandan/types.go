@@ -12,3 +12,16 @@ type OOXXResult struct {
 type OOXX struct {
 	Content string `json:"comment_content"`
 }
+
+type PicResult struct {
+	Status        string `json:"status"`
+	CurrentPage   int    `json:"current_page"`
+	TotalComments int    `json:"total_comments"`
+	PageCount     int    `json:"page_count"`
+	Count         int    `json:"count"`
+	Comments      []Pic  `json:"comments"`
+}
+
+type Pic struct {
+	Content string `json:"comment_content"`
+}
