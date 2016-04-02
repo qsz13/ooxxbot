@@ -25,3 +25,16 @@ type PicResult struct {
 type Pic struct {
 	Content string `json:"comment_content"`
 }
+
+type HotType int
+
+const (
+	OOXX_TYPE = iota
+	PIC_TYPE  = iota
+)
+
+type Hot struct {
+	URL     string
+	Content string
+	Type    HotType
+}

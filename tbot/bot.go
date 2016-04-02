@@ -4,9 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	jd "github.com/qsz13/ooxxbot/jandan"
 	rc "github.com/qsz13/ooxxbot/requestclient"
 	"net/http"
+	"strconv"
 	"strings"
+	"time"
 )
 
 type Bot struct {
@@ -22,6 +25,7 @@ func NewBot(token string, clientProxy *rc.ClientProxy, db_dsn []string) *Bot {
 	bot.Token = token
 	bot.client, _ = rc.GetClient(clientProxy)
 	bot.db, _ = initDBConn(db_dsn)
+	go bot.jandanSpider(1800 * time.Second)
 	return bot
 }
 
@@ -120,4 +124,89 @@ func (bot *Bot) ExecCmd(message *Message) {
 func (bot *Bot) ReplyError(message *Message, err error) {
 	m := "sorry, sth wrong: " + err.Error()
 	bot.ReplyText(message.Chat.ID, m)
+}
+
+func (bot *Bot) jandanSpider(interval time.Duration) {
+	for {
+		fmt.Println("Jandan Spider is working!")
+		hots, err := jd.GetHot()
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			bot.filterHot(&hots)
+			if len(hots) > 0 {
+				bot.sendHot(hots)
+				bot.saveSent(hots)
+			} else {
+				fmt.Println("nothing new")
+			}
+
+		}
+
+		time.Sleep(interval)
+	}
+}
+
+func (bot *Bot) filterHot(hots *[]jd.Hot) {
+	fmt.Println("filtering...")
+	newHots := []jd.Hot{}
+	for _, hot := range *hots {
+		if !bot.hotExists(&hot) {
+			newHots = append(newHots, hot)
+		}
+
+	}
+	*hots = newHots
+}
+
+func (bot *Bot) hotExists(hot *jd.Hot) bool {
+	stmt, err := bot.db.Prepare("SELECT count(*) from ooxxbot.hot where url = ?")
+	if err != nil {
+		fmt.Println(err)
+		return true
+	}
+	var count int
+	err = stmt.QueryRow(hot.URL).Scan(&count)
+	if err != nil {
+		fmt.Println(err)
+		return true
+	}
+	if count > 0 {
+		return true
+	}
+	return false
+
+}
+
+func (bot *Bot) sendHot(hots []jd.Hot) {
+	fmt.Println(hots)
+
+}
+
+func (bot *Bot) saveSent(hots []jd.Hot) {
+	sqlStr := "INSERT INTO ooxxbot.hot(url, content, type) VALUES "
+	vals := []interface{}{}
+
+	for _, row := range hots {
+		sqlStr += "(?, ?, ?),"
+		vals = append(vals, row.URL, row.Content, strconv.Itoa(int(row.Type)))
+	}
+	//trim the last ,
+	sqlStr = sqlStr[0 : len(sqlStr)-1]
+	//prepare the statement
+	stmt, err := bot.db.Prepare(sqlStr)
+	if err != nil {
+		fmt.Println("stmt")
+		fmt.Println(err)
+		return
+	}
+
+	//format all vals at once
+	_, err = stmt.Exec(vals...)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println("Saved!")
+
 }
