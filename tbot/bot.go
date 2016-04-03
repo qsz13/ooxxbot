@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	jd "github.com/qsz13/ooxxbot/jandan"
 	rc "github.com/qsz13/ooxxbot/requestclient"
 	"net/http"
 	"strings"
@@ -98,10 +97,6 @@ func (bot *Bot) ReplyHTML(ChatID int, html string) {
 func (bot *Bot) ReplyError(message *Message, err error) {
 	m := "sorry, sth wrong: " + err.Error()
 	bot.ReplyText(message.Chat.ID, m)
-}
-
-func (bot *Bot) sendHotMessage(userid int, hot jd.Hot) {
-	bot.ReplyHTML(userid, hot.Content)
 }
 
 func (bot *Bot) ExecCmd(message *Message) {

@@ -30,6 +30,17 @@ func (bot *Bot) getIP(message *Message) {
 
 }
 
+func (bot *Bot) sendHotMessage(userid int, hot jd.Hot) {
+	content := hot.Content
+	if hot.Type == jd.OOXX_TYPE {
+		content = "[OOXX]\n" + content
+	} else if hot.Type == jd.PIC_TYPE {
+		content = "[Pic]\n" + content
+
+	}
+	bot.ReplyHTML(userid, content)
+}
+
 func (bot *Bot) getRandomOOXX(message *Message) {
 
 	content, err := bot.getRandomComment(jd.OOXX_TYPE)
@@ -37,6 +48,7 @@ func (bot *Bot) getRandomOOXX(message *Message) {
 		fmt.Println(err)
 
 	} else {
+		content = "[OOXX]\n" + content
 		bot.ReplyHTML(message.Chat.ID, content)
 		fmt.Println(content)
 	}
@@ -48,6 +60,7 @@ func (bot *Bot) getRandomPic(message *Message) {
 		fmt.Println(err)
 
 	} else {
+		content = "[Pic]\n" + content
 		bot.ReplyHTML(message.Chat.ID, content)
 		fmt.Println(content)
 	}
@@ -56,13 +69,14 @@ func (bot *Bot) getRandomPic(message *Message) {
 
 func (bot *Bot) getLatestOOXX(message *Message) {
 	html := jd.GetLatestOOXX().Content
-
+	html = "[OOXX]\n" + html
 	bot.ReplyHTML(message.Chat.ID, html)
 	fmt.Println(html)
 }
 
 func (bot *Bot) getLatestPic(message *Message) {
 	html := jd.GetLatestPic().Content
+	html = "[Pic]\n" + html
 
 	bot.ReplyHTML(message.Chat.ID, html)
 	fmt.Println(html)
