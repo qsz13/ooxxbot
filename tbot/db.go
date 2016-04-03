@@ -74,7 +74,7 @@ func (bot *Bot) unsubscribeOOXXInDB(message *Message) error {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(message.Chat.ID, 1)
+	_, err = stmt.Exec(message.Chat.ID, 0)
 
 	if err != nil {
 		fmt.Println(err)
@@ -92,7 +92,7 @@ func (bot *Bot) unsubscribePicInDB(message *Message) error {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(message.Chat.ID, 1)
+	_, err = stmt.Exec(message.Chat.ID, 0)
 
 	if err != nil {
 		fmt.Println(err)
