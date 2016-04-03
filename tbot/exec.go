@@ -5,11 +5,10 @@ import (
 	jd "github.com/qsz13/ooxxbot/jandan"
 	"io/ioutil"
 	"net/http"
-	"strings"
 )
 
 func (bot *Bot) getHelp(message *Message) {
-	help := "/ip to check IP\n\n/ooxx to get latest ooxx\n/pic to get latest pics\n\n/sooxx to subscribe ooxx\n/spic to subscribe pic\n\n/uooxx to unsubscribe ooxx\n/upic to unsubscribe pic"
+	help := "/ip to check IP\n\n/ooxx to get random ooxx\n/pic to get random pics\n\n/looxx to get latest ooxx\n /lpic to get latest pic\n\n/sooxx to subscribe ooxx\n/spic to subscribe pic\n\n/uooxx to unsubscribe ooxx\n/upic to unsubscribe pic"
 
 	bot.ReplyText(message.Chat.ID, help)
 }
@@ -31,18 +30,40 @@ func (bot *Bot) getIP(message *Message) {
 
 }
 
-func (bot *Bot) getOOXX(message *Message) {
+func (bot *Bot) getRandomOOXX(message *Message) {
+
+	content, err := bot.getRandomComment(jd.OOXX_TYPE)
+	if err != nil {
+		fmt.Println(err)
+
+	} else {
+		bot.ReplyHTML(message.Chat.ID, content)
+		fmt.Println(content)
+	}
+}
+
+func (bot *Bot) getRandomPic(message *Message) {
+	content, err := bot.getRandomComment(jd.PIC_TYPE)
+	if err != nil {
+		fmt.Println(err)
+
+	} else {
+		bot.ReplyHTML(message.Chat.ID, content)
+		fmt.Println(content)
+	}
+
+}
+
+func (bot *Bot) getLatestOOXX(message *Message) {
 	html := jd.GetLatestOOXX().Content
-	html = strings.Replace(html, "<img src", "<a href", -1)
-	html = strings.Replace(html, "/>", ">查看原图</a>", -1)
+
 	bot.ReplyHTML(message.Chat.ID, html)
 	fmt.Println(html)
 }
 
-func (bot *Bot) getPic(message *Message) {
+func (bot *Bot) getLatestPic(message *Message) {
 	html := jd.GetLatestPic().Content
-	html = strings.Replace(html, "<img src", "<a href", -1)
-	html = strings.Replace(html, "/>", ">查看原图</a>", -1)
+
 	bot.ReplyHTML(message.Chat.ID, html)
 	fmt.Println(html)
 

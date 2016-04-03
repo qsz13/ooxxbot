@@ -25,6 +25,7 @@ func NewBot(token string, clientProxy *rc.ClientProxy, db_dsn []string) *Bot {
 	bot.client, _ = rc.GetClient(clientProxy)
 	bot.db, _ = initDBConn(db_dsn)
 	go bot.jandanSpider(1800 * time.Second)
+	go bot.apiSpider(60 * time.Second)
 	return bot
 }
 
@@ -94,6 +95,15 @@ func (bot *Bot) ReplyHTML(ChatID int, html string) {
 
 }
 
+func (bot *Bot) ReplyError(message *Message, err error) {
+	m := "sorry, sth wrong: " + err.Error()
+	bot.ReplyText(message.Chat.ID, m)
+}
+
+func (bot *Bot) sendHotMessage(userid int, hot jd.Hot) {
+	bot.ReplyHTML(userid, hot.Content)
+}
+
 func (bot *Bot) ExecCmd(message *Message) {
 	cmd := strings.ToLower(message.Text)
 	switch cmd {
@@ -104,10 +114,16 @@ func (bot *Bot) ExecCmd(message *Message) {
 		go bot.getIP(message)
 		break
 	case "/ooxx":
-		go bot.getOOXX(message)
+		go bot.getRandomOOXX(message)
 		break
 	case "/pic":
-		go bot.getPic(message)
+		go bot.getRandomPic(message)
+		break
+	case "/looxx":
+		go bot.getLatestPic(message)
+		break
+	case "/lpic":
+		go bot.getLatestPic(message)
 		break
 	case "/sooxx":
 		go bot.subscribeOOXX(message)
@@ -127,124 +143,4 @@ func (bot *Bot) ExecCmd(message *Message) {
 		bot.ReplyText(message.Chat.ID, "Incorrect, idiot!")
 	}
 
-}
-
-func (bot *Bot) ReplyError(message *Message, err error) {
-	m := "sorry, sth wrong: " + err.Error()
-	bot.ReplyText(message.Chat.ID, m)
-}
-
-func (bot *Bot) jandanSpider(interval time.Duration) {
-	for {
-		fmt.Println("Jandan Spider is working!")
-		hots, err := jd.GetHot()
-		if err != nil {
-			fmt.Println(err)
-		} else {
-			bot.filterHot(&hots)
-			if len(hots) > 0 {
-				bot.sendHot(hots)
-				bot.saveSent(hots)
-			} else {
-				fmt.Println("nothing new")
-			}
-
-		}
-
-		time.Sleep(interval)
-	}
-}
-
-func (bot *Bot) filterHot(hots *[]jd.Hot) {
-	fmt.Println("filtering...")
-	newHots := []jd.Hot{}
-	for _, hot := range *hots {
-		if !bot.hotExists(&hot) {
-			newHots = append(newHots, hot)
-		}
-
-	}
-	*hots = newHots
-}
-
-func (bot *Bot) sendHot(hots []jd.Hot) {
-	fmt.Println(hots)
-	ooxxSuber, _ := bot.getOOXXSubscriber()
-	picSuber, _ := bot.getPicSubscriber()
-	go bot.sendOOXXSubscription(ooxxSuber, hots)
-	go bot.sendPicSubscription(picSuber, hots)
-
-}
-
-func (bot *Bot) sendOOXXSubscription(suber []int, hots []jd.Hot) {
-	for _, u := range suber {
-		for _, h := range hots {
-			if h.Type == jd.OOXX_TYPE {
-				bot.sendHotMessage(u, h)
-			}
-		}
-	}
-
-}
-
-func (bot *Bot) sendPicSubscription(suber []int, hots []jd.Hot) {
-	for _, u := range suber {
-		for _, h := range hots {
-			if h.Type == jd.PIC_TYPE {
-				bot.sendHotMessage(u, h)
-			}
-		}
-	}
-}
-
-func (bot *Bot) sendHotMessage(userid int, hot jd.Hot) {
-	bot.ReplyHTML(userid, hot.Content)
-}
-
-func (bot *Bot) getOOXXSubscriber() ([]int, error) {
-	subscribers := []int{}
-	rows, err := bot.db.Query("SELECT user FROM ooxxbot.subscription where ooxx=1;")
-	if err != nil {
-		fmt.Println(err)
-		return subscribers, err
-	}
-
-	defer rows.Close()
-	sid := 0
-	for rows.Next() {
-		err = rows.Scan(&sid)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-		subscribers = append(subscribers, sid)
-	}
-	if err != nil { // TODO
-		fmt.Println(err)
-	}
-	return subscribers, err
-}
-
-func (bot *Bot) getPicSubscriber() ([]int, error) {
-	subscribers := []int{}
-	rows, err := bot.db.Query("SELECT user FROM ooxxbot.subscription where pic=1;")
-	if err != nil {
-		fmt.Println(err)
-		return subscribers, err
-	}
-
-	defer rows.Close()
-	sid := 0
-	for rows.Next() {
-		err = rows.Scan(&sid)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-		subscribers = append(subscribers, sid)
-	}
-	if err != nil { // TODO
-		fmt.Println(err)
-	}
-	return subscribers, err
 }

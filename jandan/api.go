@@ -96,8 +96,26 @@ func GetHot() ([]Hot, error) {
 
 }
 
-func getOOXXByAPI() ([]OOXX, error) {
-	res, err := http.Get("http://jandan.net/?oxwlxojflwblxbsapi=jandan.get_ooxx_comments&page=1")
+func GetAllComment() ([]Comment, error) {
+	comments := []Comment{}
+	ooxx, err := getCommentByAPI(OOXX_TYPE)
+	pic, err := getCommentByAPI(PIC_TYPE)
+
+	comments = append(comments, ooxx...)
+	comments = append(comments, pic...)
+	return comments, err
+}
+
+func getCommentByAPI(jdType JandanType) ([]Comment, error) {
+	var (
+		res *http.Response
+		err error
+	)
+	if jdType == OOXX_TYPE {
+		res, err = http.Get("http://jandan.net/?oxwlxojflwblxbsapi=jandan.get_ooxx_comments&page=1")
+	} else if jdType == PIC_TYPE {
+		res, err = http.Get("http://jandan.net/?oxwlxojflwblxbsapi=jandan.get_pic_comments&page=1")
+	}
 
 	if err != nil {
 		fmt.Println(err)
@@ -109,39 +127,29 @@ func getOOXXByAPI() ([]OOXX, error) {
 		fmt.Println(err)
 		return nil, err
 	}
-	var or OOXXResult
-	err = json.Unmarshal(body, &or)
+	var cr CommentResult
+	err = json.Unmarshal(body, &cr)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
 	}
-	return or.Comments, nil
+
+	for i, comment := range cr.Comments {
+		cr.Comments[i].Type = jdType
+		cr.Comments[i].Content = cleanComment(comment.Content)
+	}
+
+	return cr.Comments, nil
 }
 
-func getPicByAPI() ([]Pic, error) {
-	res, err := http.Get("http://jandan.net/?oxwlxojflwblxbsapi=jandan.get_pic_comments&page=1")
-
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	var pr PicResult
-	err = json.Unmarshal(body, &pr)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	return pr.Comments, nil
+func cleanComment(content string) string {
+	content = strings.Replace(content, "<img src", "<a href", -1)
+	content = strings.Replace(content, "/>", ">查看原图</a>", -1)
+	return content
 }
 
-func GetLatestOOXX() *OOXX {
-	ooxxs, err := getOOXXByAPI()
+func GetLatestOOXX() *Comment {
+	ooxxs, err := getCommentByAPI(OOXX_TYPE)
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -149,8 +157,8 @@ func GetLatestOOXX() *OOXX {
 	return &ooxxs[0]
 }
 
-func GetLatestPic() *Pic {
-	pics, err := getPicByAPI()
+func GetLatestPic() *Comment {
+	pics, err := getCommentByAPI(PIC_TYPE)
 	if err != nil {
 		fmt.Println(err)
 		return nil

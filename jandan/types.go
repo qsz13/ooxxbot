@@ -1,40 +1,31 @@
 package jandan
 
-type OOXXResult struct {
-	Status        string `json:"status"`
-	CurrentPage   int    `json:"current_page"`
-	TotalComments int    `json:"total_comments"`
-	PageCount     int    `json:"page_count"`
-	Count         int    `json:"count"`
-	Comments      []OOXX `json:"comments"`
-}
-
-type OOXX struct {
-	Content string `json:"comment_content"`
-}
-
-type PicResult struct {
-	Status        string `json:"status"`
-	CurrentPage   int    `json:"current_page"`
-	TotalComments int    `json:"total_comments"`
-	PageCount     int    `json:"page_count"`
-	Count         int    `json:"count"`
-	Comments      []Pic  `json:"comments"`
-}
-
-type Pic struct {
-	Content string `json:"comment_content"`
-}
-
-type HotType int
+type JandanType int
 
 const (
 	OOXX_TYPE = iota
 	PIC_TYPE  = iota
 )
 
+type CommentResult struct {
+	Status        string    `json:"status"`
+	CurrentPage   int       `json:"current_page"`
+	TotalComments int       `json:"total_comments"`
+	PageCount     int       `json:"page_count"`
+	Count         int       `json:"count"`
+	Comments      []Comment `json:"comments"`
+}
+
+type Comment struct {
+	ID      int        `json:"comment_ID,string"`
+	Content string     `json:"comment_content"`
+	OO      int        `json:"vote_positive,string"`
+	XX      int        `json:"vote_negative,string"`
+	Type    JandanType `json:"-"`
+}
+
 type Hot struct {
 	URL     string
 	Content string
-	Type    HotType
+	Type    JandanType
 }
