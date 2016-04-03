@@ -49,7 +49,7 @@ func (bot *Bot) getPic(message *Message) {
 }
 
 func (bot *Bot) subscribeOOXX(message *Message) {
-	err := bot.registerUser(message.From)
+	err := bot.registerUser(message)
 	err = bot.subscribeOOXXInDB(message)
 	if err != nil {
 		bot.ReplyError(message, err)
@@ -59,7 +59,7 @@ func (bot *Bot) subscribeOOXX(message *Message) {
 }
 
 func (bot *Bot) subscribePic(message *Message) {
-	err := bot.registerUser(message.From)
+	err := bot.registerUser(message)
 	err = bot.subscribePicInDB(message)
 	if err != nil {
 		bot.ReplyError(message, err)
@@ -70,7 +70,7 @@ func (bot *Bot) subscribePic(message *Message) {
 }
 
 func (bot *Bot) unsubscribeOOXX(message *Message) {
-	err := bot.registerUser(message.From)
+	err := bot.registerUser(message)
 	err = bot.unsubscribeOOXXInDB(message)
 	if err != nil {
 		bot.ReplyError(message, err)
@@ -80,7 +80,7 @@ func (bot *Bot) unsubscribeOOXX(message *Message) {
 }
 
 func (bot *Bot) unsubscribePic(message *Message) {
-	err := bot.registerUser(message.From)
+	err := bot.registerUser(message)
 	err = bot.unsubscribePicInDB(message)
 	if err != nil {
 		bot.ReplyError(message, err)
