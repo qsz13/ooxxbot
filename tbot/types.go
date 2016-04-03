@@ -44,22 +44,22 @@ type Update struct {
 }
 
 type BotStatus struct {
-	Ok          bool
-	Description string
-	ErrorCode   int `json:"error_code"`
+	Ok          bool   `json:"ok"`
+	Description string `json:"description"`
+	ErrorCode   int    `json:"error_code"`
 	Result      *User
 }
 
 type UpdateResult struct {
-	Ok          bool
-	Description string
-	ErrorCode   int `json:"error_code"`
+	Ok          bool   `json:"ok"`
+	Description string `json:"description"`
+	ErrorCode   int    `json:"error_code"`
 	Result      []Update
 }
 
 type MessageResult struct {
-	Ok          bool
-	Description string
-	ErrorCode   int `json:"error_code"`
+	Ok          bool   `json:"ok"`
+	Description string `json:"description"`
+	ErrorCode   int    `json:"error_code"`
 	Result      *Message
 }

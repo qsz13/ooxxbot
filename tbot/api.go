@@ -74,11 +74,11 @@ func (bot *Bot) sendMessage(
 		return nil, err
 	}
 	var mr MessageResult
-
 	bot.parseResult(body, &mr)
 	if mr.Ok {
 		return mr.Result, nil
 	} else {
+		fmt.Println("Message failed, reason: " + mr.Description)
 		return nil, fmt.Errorf("Message failed, reason: " + mr.Description)
 	}
 
@@ -113,7 +113,9 @@ func (bot *Bot) sendGET(method string, params map[string]string) ([]byte, error)
 func (bot *Bot) parseResult(body []byte, result interface{}) error {
 	err := json.Unmarshal(body, &result)
 	if err != nil {
-		return fmt.Errorf("tbot: invalid token")
+		fmt.Println("error")
+		fmt.Println(string(body))
+		return fmt.Errorf("tbot: invalid result")
 	}
 	return err
 }

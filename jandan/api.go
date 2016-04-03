@@ -24,6 +24,7 @@ func parsePage() ([]Hot, error) {
 }
 
 func parseOOXXHot(doc *goquery.Document, hots *[]Hot) {
+	doc.Find("img").Remove()
 	doc.Find("div#list-girl div.in").Each(func(i int, s *goquery.Selection) {
 		hot := Hot{}
 		s.Find("div.acv_author").Each(func(i int, s *goquery.Selection) {
@@ -39,7 +40,8 @@ func parseOOXXHot(doc *goquery.Document, hots *[]Hot) {
 				fmt.Println(err)
 				return
 			}
-			content = strings.TrimSpace(content)
+			content = dataCleaning(content)
+
 			hot.Content = content
 			hot.Type = OOXX_TYPE
 			*hots = append(*hots, hot)
@@ -49,6 +51,7 @@ func parseOOXXHot(doc *goquery.Document, hots *[]Hot) {
 }
 
 func parsePicHot(doc *goquery.Document, hots *[]Hot) {
+	doc.Find("img").Remove()
 	doc.Find("div#list-pic div.in").Each(func(i int, s *goquery.Selection) {
 		hot := Hot{}
 		s.Find("div.acv_author").Each(func(i int, s *goquery.Selection) {
@@ -64,13 +67,22 @@ func parsePicHot(doc *goquery.Document, hots *[]Hot) {
 				fmt.Println(err)
 				return
 			}
-			content = strings.TrimSpace(content)
+			content = dataCleaning(content)
+
 			hot.Content = content
 			hot.Type = PIC_TYPE
 			*hots = append(*hots, hot)
 		})
 	})
 
+}
+
+func dataCleaning(content string) string {
+	content = strings.TrimSpace(content)
+	content = strings.Replace(content, "<p>", "", -1)
+	content = strings.Replace(content, "</p>", "", -1)
+	content = strings.Replace(content, "<br/>", "\n", -1)
+	return content
 }
 
 func GetHot() ([]Hot, error) {

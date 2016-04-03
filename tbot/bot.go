@@ -7,7 +7,6 @@ import (
 	jd "github.com/qsz13/ooxxbot/jandan"
 	rc "github.com/qsz13/ooxxbot/requestclient"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -168,54 +167,84 @@ func (bot *Bot) filterHot(hots *[]jd.Hot) {
 	*hots = newHots
 }
 
-func (bot *Bot) hotExists(hot *jd.Hot) bool {
-	stmt, err := bot.db.Prepare("SELECT count(*) from ooxxbot.hot where url = ?")
-	if err != nil {
-		fmt.Println(err)
-		return true
-	}
-	var count int
-	err = stmt.QueryRow(hot.URL).Scan(&count)
-	if err != nil {
-		fmt.Println(err)
-		return true
-	}
-	if count > 0 {
-		return true
-	}
-	return false
-
-}
-
 func (bot *Bot) sendHot(hots []jd.Hot) {
 	fmt.Println(hots)
+	ooxxSuber, _ := bot.getOOXXSubscriber()
+	picSuber, _ := bot.getPicSubscriber()
+	go bot.sendOOXXSubscription(ooxxSuber, hots)
+	go bot.sendPicSubscription(picSuber, hots)
 
 }
 
-func (bot *Bot) saveSent(hots []jd.Hot) {
-	sqlStr := "INSERT INTO ooxxbot.hot(url, content, type) VALUES "
-	vals := []interface{}{}
-
-	for _, row := range hots {
-		sqlStr += "(?, ?, ?),"
-		vals = append(vals, row.URL, row.Content, strconv.Itoa(int(row.Type)))
+func (bot *Bot) sendOOXXSubscription(suber []int, hots []jd.Hot) {
+	for _, u := range suber {
+		for _, h := range hots {
+			if h.Type == jd.OOXX_TYPE {
+				bot.sendHotMessage(u, h)
+			}
+		}
 	}
-	//trim the last ,
-	sqlStr = sqlStr[0 : len(sqlStr)-1]
-	//prepare the statement
-	stmt, err := bot.db.Prepare(sqlStr)
+
+}
+
+func (bot *Bot) sendPicSubscription(suber []int, hots []jd.Hot) {
+	for _, u := range suber {
+		for _, h := range hots {
+			if h.Type == jd.PIC_TYPE {
+				bot.sendHotMessage(u, h)
+			}
+		}
+	}
+}
+
+func (bot *Bot) sendHotMessage(userid int, hot jd.Hot) {
+	bot.ReplyHTML(userid, hot.Content)
+}
+
+func (bot *Bot) getOOXXSubscriber() ([]int, error) {
+	subscribers := []int{}
+	rows, err := bot.db.Query("SELECT user FROM ooxxbot.subscription where ooxx=1;")
 	if err != nil {
-		fmt.Println("stmt")
 		fmt.Println(err)
-		return
+		return subscribers, err
 	}
 
-	//format all vals at once
-	_, err = stmt.Exec(vals...)
+	defer rows.Close()
+	sid := 0
+	for rows.Next() {
+		err = rows.Scan(&sid)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		subscribers = append(subscribers, sid)
+	}
+	if err != nil { // TODO
+		fmt.Println(err)
+	}
+	return subscribers, err
+}
+
+func (bot *Bot) getPicSubscriber() ([]int, error) {
+	subscribers := []int{}
+	rows, err := bot.db.Query("SELECT user FROM ooxxbot.subscription where pic=1;")
 	if err != nil {
 		fmt.Println(err)
-		return
+		return subscribers, err
 	}
-	fmt.Println("Saved!")
 
+	defer rows.Close()
+	sid := 0
+	for rows.Next() {
+		err = rows.Scan(&sid)
+		if err != nil {
+			fmt.Println(err)
+			continue
+		}
+		subscribers = append(subscribers, sid)
+	}
+	if err != nil { // TODO
+		fmt.Println(err)
+	}
+	return subscribers, err
 }
