@@ -33,13 +33,7 @@ func (bot *Bot) subscribeOOXXInDB(message *Message) error {
 		fmt.Println(err)
 		return err
 	}
-	if message.Chat.Type == "private" {
-		_, err = stmt.Exec(message.From.ID, 1)
-
-	} else if message.Chat.Type == "group" {
-		_, err = stmt.Exec(message.Chat.ID, 1)
-
-	}
+	_, err = stmt.Exec(message.Chat.ID, 1)
 
 	if err != nil {
 		fmt.Println(err)
@@ -55,13 +49,7 @@ func (bot *Bot) subscribePicInDB(message *Message) error {
 		fmt.Println(err)
 		return err
 	}
-	if message.Chat.Type == "private" {
-		_, err = stmt.Exec(message.From.ID, 1)
-
-	} else if message.Chat.Type == "group" {
-		_, err = stmt.Exec(message.Chat.ID, 1)
-
-	}
+	_, err = stmt.Exec(message.Chat.ID, 1)
 
 	if err != nil {
 		fmt.Println(err)
@@ -77,13 +65,7 @@ func (bot *Bot) unsubscribeOOXXInDB(message *Message) error {
 		fmt.Println(err)
 		return err
 	}
-	if message.Chat.Type == "private" {
-		_, err = stmt.Exec(message.From.ID, 1)
-
-	} else if message.Chat.Type == "group" {
-		_, err = stmt.Exec(message.Chat.ID, 1)
-
-	}
+	_, err = stmt.Exec(message.Chat.ID, 1)
 
 	if err != nil {
 		fmt.Println(err)
@@ -99,13 +81,7 @@ func (bot *Bot) unsubscribePicInDB(message *Message) error {
 		fmt.Println(err)
 		return err
 	}
-	if message.Chat.Type == "private" {
-		_, err = stmt.Exec(message.From.ID, 1)
-
-	} else if message.Chat.Type == "group" {
-		_, err = stmt.Exec(message.Chat.ID, 1)
-
-	}
+	_, err = stmt.Exec(message.Chat.ID, 1)
 
 	if err != nil {
 		fmt.Println(err)

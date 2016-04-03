@@ -100,21 +100,30 @@ func (bot *Bot) ExecCmd(message *Message) {
 	switch cmd {
 	case "/start":
 		go bot.getHelp(message)
+		break
 	case "/ip":
 		go bot.getIP(message)
 		break
 	case "/ooxx":
 		go bot.getOOXX(message)
+		break
 	case "/pic":
 		go bot.getPic(message)
+		break
 	case "/sooxx":
 		go bot.subscribeOOXX(message)
+		break
 	case "/spic":
 		go bot.subscribePic(message)
+		break
 	case "/uooxx":
 		go bot.unsubscribeOOXX(message)
+		break
 	case "/upic":
 		go bot.unsubscribePic(message)
+		break
+	case "":
+		break
 	default:
 		bot.ReplyText(message.Chat.ID, "Incorrect, idiot!")
 	}
