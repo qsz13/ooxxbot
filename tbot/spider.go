@@ -7,6 +7,7 @@ import (
 )
 
 func (bot *Bot) jandanSpider(interval time.Duration) {
+	firstTime := true
 	for {
 		fmt.Println("Jandan Spider is working!")
 		hots, err := jd.GetHot()
@@ -15,11 +16,14 @@ func (bot *Bot) jandanSpider(interval time.Duration) {
 		} else {
 			bot.filterHot(&hots)
 			if len(hots) > 0 {
-				bot.sendHot(hots)
+				if !firstTime {
+					bot.sendHot(hots)
+				}
 				bot.saveSent(hots)
 			} else {
 				fmt.Println("nothing new")
 			}
+			firstTime = false
 
 		}
 
