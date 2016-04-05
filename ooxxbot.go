@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/qsz13/ooxxbot/logger"
 	rc "github.com/qsz13/ooxxbot/requestclient"
 	"github.com/qsz13/ooxxbot/tbot"
 )
@@ -22,7 +23,7 @@ func main() {
 
 func handleMessages(bot *tbot.Bot) {
 	for message := range bot.Messages {
-		fmt.Println(message.Text)
+		logger.Info().Println("Message from " + message.From.FirstName + " " + message.From.LastName + ": " + message.Text)
 		bot.ExecCmd(message)
 	}
 }

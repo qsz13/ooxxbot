@@ -148,20 +148,20 @@ func cleanComment(content string) string {
 	return content
 }
 
-func GetLatestOOXX() *Comment {
+func GetLatestOOXX() (*Comment, error) {
 	ooxxs, err := getCommentByAPI(OOXX_TYPE)
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil, err
 	}
-	return &ooxxs[0]
+	return &ooxxs[0], err
 }
 
-func GetLatestPic() *Comment {
+func GetLatestPic() (*Comment, error) {
 	pics, err := getCommentByAPI(PIC_TYPE)
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil, err
 	}
-	return &pics[0]
+	return &pics[0], err
 }

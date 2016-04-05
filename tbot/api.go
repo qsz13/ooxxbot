@@ -2,7 +2,9 @@ package tbot
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"github.com/qsz13/ooxxbot/logger"
 	"io/ioutil"
 	"net/url"
 	"strconv"
@@ -13,7 +15,8 @@ func (bot *Bot) getMe() (*User, error) {
 	body, err := bot.sendGET("getMe", params)
 
 	if err != nil {
-		fmt.Println(err)
+		logger.Error().Println("Request API getMe failed: " + err.Error())
+		return nil, err
 	}
 	var bs BotStatus
 
@@ -21,7 +24,9 @@ func (bot *Bot) getMe() (*User, error) {
 	if bs.Ok {
 		return bs.Result, nil
 	} else {
-		return nil, fmt.Errorf("bot status is not OK, reason: " + bs.Description)
+		err = errors.New("Bot status is not OK, reason: " + bs.Description)
+		logger.Error().Println(err.Error())
+		return nil, err
 	}
 }
 
@@ -36,6 +41,7 @@ func (bot *Bot) getUpdates(offset, limit, timeout int) ([]Update, error) {
 	}
 	body, err := bot.sendGET("getUpdates", params)
 	if err != nil {
+		logger.Error().Println("Request API getUpdates failed: " + err.Error())
 		return nil, err
 	}
 	var ur UpdateResult
@@ -44,7 +50,9 @@ func (bot *Bot) getUpdates(offset, limit, timeout int) ([]Update, error) {
 	if ur.Ok {
 		return ur.Result, nil
 	} else {
-		return nil, fmt.Errorf("bot status is not OK, reason: " + ur.Description)
+		err = errors.New("Bot status is not OK, reason: " + ur.Description)
+		logger.Error().Println(err.Error())
+		return nil, err
 	}
 
 }
@@ -71,6 +79,7 @@ func (bot *Bot) sendMessage(
 
 	body, err := bot.sendPOST("sendMessage", params)
 	if err != nil {
+		logger.Error().Println("Request API sendMessage failed: " + err.Error())
 		return nil, err
 	}
 	var mr MessageResult
@@ -78,8 +87,9 @@ func (bot *Bot) sendMessage(
 	if mr.Ok {
 		return mr.Result, nil
 	} else {
-		fmt.Println("Message failed, reason: " + mr.Description)
-		return nil, fmt.Errorf("Message failed, reason: " + mr.Description)
+		err = errors.New("Message failed, reason: " + mr.Description)
+		logger.Error().Println(err.Error())
+		return nil, err
 	}
 
 }
@@ -96,16 +106,17 @@ func (bot *Bot) sendGET(method string, params map[string]string) ([]byte, error)
 	for k, v := range params {
 		urladdr = fmt.Sprintf("%s%s=%s&", urladdr, k, v)
 	}
-	fmt.Println("sending GET request to " + urladdr)
+	logger.Info().Println("Get request to: " + urladdr)
 	res, err := bot.client.Get(urladdr)
 	if err != nil {
-		fmt.Println(err)
-		return nil, fmt.Errorf("request failed")
+		logger.Error().Println("Request for " + urladdr + " failed: " + err.Error())
+		return nil, err
 	}
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error().Println("Read response body failed: " + err.Error())
+		return nil, err
 	}
 	return body, err
 }
@@ -113,9 +124,7 @@ func (bot *Bot) sendGET(method string, params map[string]string) ([]byte, error)
 func (bot *Bot) parseResult(body []byte, result interface{}) error {
 	err := json.Unmarshal(body, &result)
 	if err != nil {
-		fmt.Println("error")
-		fmt.Println(string(body))
-		return fmt.Errorf("tbot: invalid result")
+		logger.Error().Println("Parse json failed: " + err.Error() + ", Content:\n" + string(body))
 	}
 	return err
 }
@@ -126,16 +135,16 @@ func (bot *Bot) sendPOST(method string, params map[string]string) ([]byte, error
 	for k, v := range params {
 		form.Set(k, v)
 	}
-	fmt.Println("sending POST request to " + urladdr)
+	logger.Info().Println("POST request to: " + urladdr)
 	res, err := bot.client.PostForm(urladdr, form)
 	if err != nil {
-		fmt.Println(err)
-		return nil, fmt.Errorf("request failed")
+		logger.Error().Println("Request for " + urladdr + " failed: " + err.Error())
+		return nil, err
 	}
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		fmt.Println(err)
+		logger.Error().Println("Read response body failed: " + err.Error())
 	}
 	return body, err
 }

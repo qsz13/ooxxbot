@@ -2,10 +2,11 @@ package tbot
 
 import (
 	"database/sql"
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/qsz13/ooxxbot/logger"
 	rc "github.com/qsz13/ooxxbot/requestclient"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -29,26 +30,28 @@ func NewBot(token string, clientProxy *rc.ClientProxy, db_dsn []string) *Bot {
 }
 
 func initDBConn(db_dsn []string) (*sql.DB, error) {
-	fmt.Println("Init DB connection")
+	logger.Info().Println("Init DB connection")
+
 	var dberr error
-	for retry := 3; retry >= 0; retry-- {
+	for retry := 1; retry <= 3; retry++ {
 		for _, d := range db_dsn {
 			db, err := sql.Open("mysql", d)
 			if err != nil {
+				logger.Warning().Println("DB open failed, retry times: " + strconv.Itoa(retry) + ", reason:" + err.Error())
 				dberr = err
 				continue
 			}
 			err = db.Ping()
 			if err != nil {
+				logger.Warning().Println("DB ping failed, retry times: " + strconv.Itoa(retry) + ", reason:" + err.Error())
 				dberr = err
 				continue
 			}
-			fmt.Println("DB connection success.")
+			logger.Info().Println("DB connection success.")
 			return db, nil
 		}
 	}
-	fmt.Println(dberr)
-
+	logger.Error().Println("DB connection failed.")
 	return nil, dberr
 }
 
@@ -62,7 +65,7 @@ func (bot *Bot) loop(messages chan *Message, queries chan *InlineQuery) {
 
 		updates, err := bot.getUpdates(lastUpdate+1, 0, 1000) //TBD
 		if err != nil {
-			fmt.Println(err)
+			logger.Error().Println("Get telegram updates failed: " + err.Error())
 			continue
 		}
 		maxid := lastUpdate
@@ -83,15 +86,14 @@ func (bot *Bot) loop(messages chan *Message, queries chan *InlineQuery) {
 	}
 }
 
-func (bot *Bot) ReplyText(ChatID int, Text string) {
-
-	bot.sendMessage(ChatID, Text, "", false, false, -1)
-
+func (bot *Bot) ReplyText(ChatID int, Text string) (*Message, error) {
+	m, err := bot.sendMessage(ChatID, Text, "", false, false, -1)
+	return m, err
 }
 
-func (bot *Bot) ReplyHTML(ChatID int, html string) {
-	bot.sendMessage(ChatID, html, "HTML", false, false, -1)
-
+func (bot *Bot) ReplyHTML(ChatID int, html string) (*Message, error) {
+	m, err := bot.sendMessage(ChatID, html, "HTML", false, false, -1)
+	return m, err
 }
 
 func (bot *Bot) ReplyError(message *Message, err error) {

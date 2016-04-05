@@ -31,7 +31,6 @@ func GetClient(clientProxy *ClientProxy) (client *http.Client, err error) {
 	} else if clientProxy.ProxyType == ENV_PROXY {
 		//TODO
 	} else if clientProxy.ProxyType == MANUAL_PROXY {
-		fmt.Println("manual proxy")
 		url, err := url.Parse(clientProxy.URL)
 		if err != nil {
 			fmt.Println(err)

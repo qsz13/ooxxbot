@@ -3,16 +3,17 @@ package tbot
 import (
 	"fmt"
 	jd "github.com/qsz13/ooxxbot/jandan"
+	"github.com/qsz13/ooxxbot/logger"
 	"time"
 )
 
 func (bot *Bot) jandanSpider(interval time.Duration) {
 	firstTime := true
 	for {
-		fmt.Println("Jandan Spider is working!")
+		logger.Info().Println("Jandan Spider is working!")
 		hots, err := jd.GetHot()
 		if err != nil {
-			fmt.Println(err)
+			logger.Error().Println("Jandan Spider get hot failed: " + err.Error())
 		} else {
 			bot.filterHot(&hots)
 			if len(hots) > 0 {
@@ -21,7 +22,7 @@ func (bot *Bot) jandanSpider(interval time.Duration) {
 				}
 				bot.saveSent(hots)
 			} else {
-				fmt.Println("nothing new")
+				logger.Info().Println("Jandan Spider got nothing new.")
 			}
 			firstTime = false
 
@@ -34,13 +35,12 @@ func (bot *Bot) jandanSpider(interval time.Duration) {
 func (bot *Bot) apiSpider(interval time.Duration) {
 
 	for {
-		fmt.Println("API Spider is working!")
+		logger.Info().Println("API Spider is working!")
 		comments, err := jd.GetAllComment()
 		if err != nil {
-			fmt.Println(err)
+			logger.Error().Println("API Spider failed to get comment: " + err.Error())
 		} else {
 			bot.saveCommentsToDB(comments)
-
 		}
 		time.Sleep(interval)
 	}
@@ -48,7 +48,7 @@ func (bot *Bot) apiSpider(interval time.Duration) {
 }
 
 func (bot *Bot) filterHot(hots *[]jd.Hot) {
-	fmt.Println("filtering...")
+	logger.Info().Println("Filtering hot...")
 	newHots := []jd.Hot{}
 	for _, hot := range *hots {
 		if !bot.hotExists(&hot) {
@@ -60,11 +60,11 @@ func (bot *Bot) filterHot(hots *[]jd.Hot) {
 }
 
 func (bot *Bot) sendHot(hots []jd.Hot) {
-	fmt.Println(hots)
 	ooxxSuber, _ := bot.getOOXXSubscriber()
 	picSuber, _ := bot.getPicSubscriber()
 	go bot.sendOOXXSubscription(ooxxSuber, hots)
 	go bot.sendPicSubscription(picSuber, hots)
+	logger.Info().Println("Sending Hots: " + fmt.Sprintf("%v", hots))
 
 }
 
