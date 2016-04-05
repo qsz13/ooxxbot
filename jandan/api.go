@@ -27,15 +27,15 @@ func parseOOXXHot(doc *goquery.Document, hots *[]Hot) {
 	doc.Find("img").Remove()
 	doc.Find("div#list-girl div.in").Each(func(i int, s *goquery.Selection) {
 		hot := Hot{}
-		s.Find("div.acv_author").Each(func(i int, s *goquery.Selection) {
-			url, exist := s.Find("a").Attr("href")
+		s.Find("div.acv_comment").Each(func(i int, s *goquery.Selection) {
+			url, exist := s.Find("div.vote").Attr("id")
 			if !exist {
 				fmt.Println("Link not exists")
 				return
 			}
-			url = strings.Replace(url, "http://jandan.net", "", -1)
+			url = strings.Replace(url, "vote-", "", -1)
 			hot.URL = url
-			content, err := s.Next().Html()
+			content, err := s.Find("p").Html()
 			if err != nil {
 				fmt.Println(err)
 				return
@@ -54,15 +54,15 @@ func parsePicHot(doc *goquery.Document, hots *[]Hot) {
 	doc.Find("img").Remove()
 	doc.Find("div#list-pic div.in").Each(func(i int, s *goquery.Selection) {
 		hot := Hot{}
-		s.Find("div.acv_author").Each(func(i int, s *goquery.Selection) {
-			url, exist := s.Find("a").Attr("href")
+		s.Find("div.acv_comment").Each(func(i int, s *goquery.Selection) {
+			url, exist := s.Find("div.vote").Attr("id")
 			if !exist {
 				fmt.Println("Link not exists")
 				return
 			}
-			url = strings.Replace(url, "http://jandan.net", "", -1)
+			url = strings.Replace(url, "vote-", "", -1)
 			hot.URL = url
-			content, err := s.Next().Html()
+			content, err := s.Find("p").Html()
 			if err != nil {
 				fmt.Println(err)
 				return
