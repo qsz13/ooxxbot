@@ -115,7 +115,7 @@ func (bot *Bot) ExecCmd(message *Message) {
 		go bot.getRandomPic(message)
 		break
 	case "/looxx":
-		go bot.getLatestPic(message)
+		go bot.getLatestOOXX(message)
 		break
 	case "/lpic":
 		go bot.getLatestPic(message)
