@@ -62,7 +62,7 @@ func (bot *Bot) getRandomOOXX(message *Message) {
 			logger.Error().Println("Reply random OOXX failed:" + err.Error())
 			return
 		}
-		logger.Info().Println("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ", " + message.Text)
+		logger.Info().Println("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ", " + content)
 	}
 }
 
@@ -77,7 +77,7 @@ func (bot *Bot) getRandomPic(message *Message) {
 			logger.Error().Println("Reply random Pic failed:" + err.Error())
 			return
 		}
-		logger.Info().Println("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ", " + message.Text)
+		logger.Info().Println("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ", " + content)
 
 	}
 
@@ -95,7 +95,7 @@ func (bot *Bot) getLatestOOXX(message *Message) {
 			logger.Error().Println("Reply Latest OOXX failed:" + err.Error())
 			return
 		}
-		logger.Info().Println("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ": " + message.Text)
+		logger.Info().Println("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ": " + content)
 	}
 }
 
@@ -111,7 +111,7 @@ func (bot *Bot) getLatestPic(message *Message) {
 			logger.Error().Println("Reply Latest Pic failed:" + err.Error())
 			return
 		}
-		logger.Info().Println("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ": " + message.Text)
+		logger.Info().Println("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ": " + content)
 	}
 }
 
