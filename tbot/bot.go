@@ -107,6 +107,9 @@ func (bot *Bot) ExecCmd(message *Message) {
 	case "/start":
 		go bot.getHelp(message)
 		break
+	case "/s":
+		go bot.getShortHelp(message)
+		break
 	case "/ip":
 		go bot.getIP(message)
 		break

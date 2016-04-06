@@ -13,6 +13,11 @@ func (bot *Bot) getHelp(message *Message) {
 	bot.ReplyText(message.Chat.ID, help)
 }
 
+func (bot *Bot) getShortHelp(message *Message) {
+	help := "/ip to check IP \n\n/ooxx to get random ooxx\n\n/pic to get random pic"
+	bot.ReplyText(message.Chat.ID, help)
+}
+
 func (bot *Bot) getIP(message *Message) {
 	res, err := http.Get("http://wtfismyip.com/text")
 	if err != nil {
