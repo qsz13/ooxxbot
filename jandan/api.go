@@ -81,7 +81,7 @@ func dataCleaning(content string) string {
 	content = strings.TrimSpace(content)
 	content = strings.Replace(content, "<p>", "", -1)
 	content = strings.Replace(content, "</p>", "", -1)
-	content = strings.Replace(content, "<br/>", "\n", -1)
+	content = strings.Replace(content, "<br/>", "\r\n", -1)
 	content = strings.Replace(content, " target=\"_blank\" class=\"view_img_link\"", "", -1)
 	return content
 }

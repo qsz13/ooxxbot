@@ -92,7 +92,21 @@ func (bot *Bot) ReplyText(ChatID int, Text string) (*Message, error) {
 }
 
 func (bot *Bot) ReplyHTML(ChatID int, html string) (*Message, error) {
-	m, err := bot.sendMessage(ChatID, html, "HTML", false, false, -1)
+
+	texts := strings.Split(html, "\r\n")
+	size := len(texts)
+	var (
+		m   *Message
+		err error
+	)
+	for i := 1; i <= size; i++ {
+		text := texts[i-1]
+		if size != 1 {
+			text = "(" + strconv.Itoa(i) + "/" + strconv.Itoa(size) + ")" + text
+		}
+		m, err = bot.sendMessage(ChatID, text, "HTML", false, false, -1)
+	}
+
 	return m, err
 }
 

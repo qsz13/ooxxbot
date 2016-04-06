@@ -57,12 +57,12 @@ func (bot *Bot) getRandomOOXX(message *Message) {
 		logger.Error().Println("Get random comment failed: " + err.Error())
 	} else {
 		content = "[OOXX]\n" + content
-		m, err := bot.ReplyHTML(message.Chat.ID, content)
+		_, err := bot.ReplyHTML(message.Chat.ID, content)
 		if err != nil {
 			logger.Error().Println("Reply random OOXX failed:" + err.Error())
 			return
 		}
-		logger.Info().Println("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ", " + m.Text)
+		logger.Info().Println("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ", " + message.Text)
 	}
 }
 
@@ -72,12 +72,12 @@ func (bot *Bot) getRandomPic(message *Message) {
 		logger.Error().Println("Get random Pic failed: " + err.Error())
 	} else {
 		content = "[Pic]\n" + content
-		m, err := bot.ReplyHTML(message.Chat.ID, content)
+		_, err := bot.ReplyHTML(message.Chat.ID, content)
 		if err != nil {
 			logger.Error().Println("Reply random Pic failed:" + err.Error())
 			return
 		}
-		logger.Info().Println("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ", " + m.Text)
+		logger.Info().Println("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ", " + message.Text)
 
 	}
 
@@ -90,12 +90,12 @@ func (bot *Bot) getLatestOOXX(message *Message) {
 		logger.Error().Println("Get latest OOXX failed: " + err.Error())
 	} else {
 		content = "[OOXX]\n" + content
-		m, err := bot.ReplyHTML(message.Chat.ID, content)
+		_, err := bot.ReplyHTML(message.Chat.ID, content)
 		if err != nil {
 			logger.Error().Println("Reply Latest OOXX failed:" + err.Error())
 			return
 		}
-		logger.Info().Println("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ": " + m.Text)
+		logger.Info().Println("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ": " + message.Text)
 	}
 }
 
@@ -106,12 +106,12 @@ func (bot *Bot) getLatestPic(message *Message) {
 		logger.Error().Println("Get latest Pic failed: " + err.Error())
 	} else {
 		content = "[Pic]\n" + content
-		m, err := bot.ReplyHTML(message.Chat.ID, content)
+		_, err := bot.ReplyHTML(message.Chat.ID, content)
 		if err != nil {
 			logger.Error().Println("Reply Latest Pic failed:" + err.Error())
 			return
 		}
-		logger.Info().Println("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ": " + m.Text)
+		logger.Info().Println("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ": " + message.Text)
 	}
 }
 
