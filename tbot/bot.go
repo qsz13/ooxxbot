@@ -101,6 +101,10 @@ func (bot *Bot) ReplyHTML(ChatID int, html string) (*Message, error) {
 	)
 	for i := 1; i <= size; i++ {
 		text := texts[i-1]
+		text = strings.TrimSpace(text)
+		if text == "" {
+			continue
+		}
 		if size != 1 {
 			text = "(" + strconv.Itoa(i) + "/" + strconv.Itoa(size) + ")" + text
 		}
