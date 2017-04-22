@@ -2,7 +2,7 @@ package tbot
 
 import (
 	"database/sql"
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 	"github.com/qsz13/ooxxbot/logger"
 	rc "github.com/qsz13/ooxxbot/requestclient"
 	"net/http"
@@ -19,7 +19,7 @@ type Bot struct {
 	Queries  chan *InlineQuery
 }
 
-func NewBot(token string, clientProxy *rc.ClientProxy, db_dsn []string) *Bot {
+func NewBot(token string, clientProxy *rc.ClientProxy, db_dsn string) *Bot {
 	bot := new(Bot)
 	bot.Token = token
 	bot.client, _ = rc.GetClient(clientProxy)
@@ -29,27 +29,25 @@ func NewBot(token string, clientProxy *rc.ClientProxy, db_dsn []string) *Bot {
 	return bot
 }
 
-func initDBConn(db_dsn []string) (*sql.DB, error) {
+func initDBConn(db_dsn string) (*sql.DB, error) {
 	logger.Info().Println("Init DB connection")
 
 	var dberr error
 	for retry := 1; retry <= 3; retry++ {
-		for _, d := range db_dsn {
-			db, err := sql.Open("mysql", d)
-			if err != nil {
-				logger.Warning().Println("DB open failed, retry times: " + strconv.Itoa(retry) + ", reason:" + err.Error())
-				dberr = err
-				continue
-			}
-			err = db.Ping()
-			if err != nil {
-				logger.Warning().Println("DB ping failed, retry times: " + strconv.Itoa(retry) + ", reason:" + err.Error())
-				dberr = err
-				continue
-			}
-			logger.Info().Println("DB connection success.")
-			return db, nil
+		db, err := sql.Open("postgres", db_dsn)
+		if err != nil {
+			logger.Warning().Println("DB open failed, retry times: " + strconv.Itoa(retry) + ", reason:" + err.Error())
+			dberr = err
+			continue
 		}
+		err = db.Ping()
+		if err != nil {
+			logger.Warning().Println("DB ping failed, retry times: " + strconv.Itoa(retry) + ", reason:" + err.Error())
+			dberr = err
+			continue
+		}
+		logger.Info().Println("DB connection success.")
+		return db, nil
 	}
 	logger.Error().Println("DB connection failed.")
 	return nil, dberr

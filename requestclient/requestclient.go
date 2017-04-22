@@ -27,7 +27,7 @@ func GetClient(clientProxy *ClientProxy) (client *http.Client, err error) {
 	var transport *http.Transport
 
 	if clientProxy == nil || clientProxy.ProxyType == NO_PROXY {
-		//TODO
+		transport = &http.Transport{}
 	} else if clientProxy.ProxyType == ENV_PROXY {
 		//TODO
 	} else if clientProxy.ProxyType == MANUAL_PROXY {

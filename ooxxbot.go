@@ -3,13 +3,15 @@ package main
 import (
 	"fmt"
 	"github.com/qsz13/ooxxbot/logger"
-	rc "github.com/qsz13/ooxxbot/requestclient"
 	"github.com/qsz13/ooxxbot/tbot"
+	"os"
 )
 
 func main() {
 	fmt.Printf("Welcome to OOXXBot\n")
-	bot := tbot.NewBot(TOKEN, &rc.ClientProxy{URL: "127.0.0.1:1080", ProxyType: rc.SOCKS5_PROXY}, DB_DSN)
+	DB_DSN := os.Getenv("DATABASE_URL")
+	TOKEN := os.Getenv("TOKEN")
+	bot := tbot.NewBot(TOKEN, nil, DB_DSN)
 	//bot := tbot.NewBot(TOKEN, &rc.ClientProxy{ProxyType: rc.ENV_PROXY}, DB_DSN)
 	//bot := tbot.NewBot(TOKEN, &rc.ClientProxy{URL: "http://proxy.phl.sap.corp:8080", ProxyType: rc.MANUAL_PROXY}, DB_DSN)
 	// fmt.Println(bot.GetMe())
