@@ -30,26 +30,26 @@ func NewBot(token string, clientProxy *rc.ClientProxy, db_dsn string) *Bot {
 }
 
 func initDBConn(db_dsn string) (*sql.DB, error) {
-	logger.Info().Println("Init DB connection")
+	logger.Debug("Init DB connection")
 
 	var dberr error
 	for retry := 1; retry <= 3; retry++ {
 		db, err := sql.Open("postgres", db_dsn)
 		if err != nil {
-			logger.Warning().Println("DB open failed, retry times: " + strconv.Itoa(retry) + ", reason:" + err.Error())
+			logger.Warning("DB open failed, retry times: " + strconv.Itoa(retry) + ", reason:" + err.Error())
 			dberr = err
 			continue
 		}
 		err = db.Ping()
 		if err != nil {
-			logger.Warning().Println("DB ping failed, retry times: " + strconv.Itoa(retry) + ", reason:" + err.Error())
+			logger.Warning("DB ping failed, retry times: " + strconv.Itoa(retry) + ", reason:" + err.Error())
 			dberr = err
 			continue
 		}
-		logger.Info().Println("DB connection success.")
+		logger.Debug("DB connection success.")
 		return db, nil
 	}
-	logger.Error().Println("DB connection failed.")
+	logger.Error("DB connection failed.")
 	return nil, dberr
 }
 
@@ -63,7 +63,7 @@ func (bot *Bot) loop(messages chan *Message, queries chan *InlineQuery) {
 
 		updates, err := bot.getUpdates(lastUpdate+1, 0, 1000) //TBD
 		if err != nil {
-			logger.Error().Println("Get telegram updates failed: " + err.Error())
+			logger.Error("Get telegram updates failed: " + err.Error())
 			continue
 		}
 		maxid := lastUpdate

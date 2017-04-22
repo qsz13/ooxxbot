@@ -15,7 +15,7 @@ func (bot *Bot) getMe() (*User, error) {
 	body, err := bot.sendGET("getMe", params)
 
 	if err != nil {
-		logger.Error().Println("Request API getMe failed: " + err.Error())
+		logger.Error("Request API getMe failed: " + err.Error())
 		return nil, err
 	}
 	var bs BotStatus
@@ -25,7 +25,7 @@ func (bot *Bot) getMe() (*User, error) {
 		return bs.Result, nil
 	} else {
 		err = errors.New("Bot status is not OK, reason: " + bs.Description)
-		logger.Error().Println(err.Error())
+		logger.Error(err.Error())
 		return nil, err
 	}
 }
@@ -41,7 +41,7 @@ func (bot *Bot) getUpdates(offset, limit, timeout int) ([]Update, error) {
 	}
 	body, err := bot.sendGET("getUpdates", params)
 	if err != nil {
-		logger.Error().Println("Request API getUpdates failed: " + err.Error())
+		logger.Error("Request API getUpdates failed: " + err.Error())
 		return nil, err
 	}
 	var ur UpdateResult
@@ -51,7 +51,7 @@ func (bot *Bot) getUpdates(offset, limit, timeout int) ([]Update, error) {
 		return ur.Result, nil
 	} else {
 		err = errors.New("Bot status is not OK, reason: " + ur.Description)
-		logger.Error().Println(err.Error())
+		logger.Error(err.Error())
 		return nil, err
 	}
 
@@ -79,7 +79,7 @@ func (bot *Bot) sendMessage(
 
 	body, err := bot.sendPOST("sendMessage", params)
 	if err != nil {
-		logger.Error().Println("Request API sendMessage failed: " + err.Error())
+		logger.Error("Request API sendMessage failed: " + err.Error())
 		return nil, err
 	}
 	var mr MessageResult
@@ -88,7 +88,7 @@ func (bot *Bot) sendMessage(
 		return mr.Result, nil
 	} else {
 		err = errors.New("Message failed, reason: " + mr.Description)
-		logger.Error().Println(err.Error())
+		logger.Error(err.Error())
 		return nil, err
 	}
 
@@ -106,16 +106,16 @@ func (bot *Bot) sendGET(method string, params map[string]string) ([]byte, error)
 	for k, v := range params {
 		urladdr = fmt.Sprintf("%s%s=%s&", urladdr, k, v)
 	}
-	logger.Info().Println("Get request to: " + urladdr)
+	logger.Debug("Get request to: " + urladdr)
 	res, err := bot.client.Get(urladdr)
 	if err != nil {
-		logger.Error().Println("Request for " + urladdr + " failed: " + err.Error())
+		logger.Error("Request for " + urladdr + " failed: " + err.Error())
 		return nil, err
 	}
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		logger.Error().Println("Read response body failed: " + err.Error())
+		logger.Error("Read response body failed: " + err.Error())
 		return nil, err
 	}
 	return body, err
@@ -124,7 +124,7 @@ func (bot *Bot) sendGET(method string, params map[string]string) ([]byte, error)
 func (bot *Bot) parseResult(body []byte, result interface{}) error {
 	err := json.Unmarshal(body, &result)
 	if err != nil {
-		logger.Error().Println("Parse json failed: " + err.Error() + ", Content:\n" + string(body))
+		logger.Error("Parse json failed: " + err.Error() + ", Content:\n" + string(body))
 	}
 	return err
 }
@@ -135,16 +135,16 @@ func (bot *Bot) sendPOST(method string, params map[string]string) ([]byte, error
 	for k, v := range params {
 		form.Set(k, v)
 	}
-	logger.Info().Println("POST request to: " + urladdr)
+	logger.Debug("POST request to: " + urladdr)
 	res, err := bot.client.PostForm(urladdr, form)
 	if err != nil {
-		logger.Error().Println("Request for " + urladdr + " failed: " + err.Error())
+		logger.Error("Request for " + urladdr + " failed: " + err.Error())
 		return nil, err
 	}
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		logger.Error().Println("Read response body failed: " + err.Error())
+		logger.Error("Read response body failed: " + err.Error())
 	}
 	return body, err
 }

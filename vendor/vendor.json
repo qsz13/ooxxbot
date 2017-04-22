@@ -15,12 +15,6 @@
 			"revisionTime": "2015-07-30T17:44:59Z"
 		},
 		{
-			"checksumSHA1": "Wh67fxjuo+FsIINnXiN5IHYeTNo=",
-			"path": "github.com/go-sql-driver/mysql",
-			"revision": "d512f204a577a4ab037a1816604c48c9c13210be",
-			"revisionTime": "2015-11-12T16:33:55Z"
-		},
-		{
 			"checksumSHA1": "uTUsjF7bymOuKvXbW2BpkK/w4Vg=",
 			"path": "github.com/lib/pq",
 			"revision": "2704adc878c21e1329f46f6e56a1c387d788ff94",

@@ -10,10 +10,10 @@ import (
 func (bot *Bot) jandanSpider(interval time.Duration) {
 	firstTime := true
 	for {
-		logger.Info().Println("Jandan Spider is working!")
+		logger.Debug("Jandan Spider is working!")
 		hots, err := jd.GetHot()
 		if err != nil {
-			logger.Error().Println("Jandan Spider get hot failed: " + err.Error())
+			logger.Error("Jandan Spider get hot failed: " + err.Error())
 		} else {
 			bot.filterHot(&hots)
 			if len(hots) > 0 {
@@ -22,7 +22,7 @@ func (bot *Bot) jandanSpider(interval time.Duration) {
 				}
 				bot.saveSent(hots)
 			} else {
-				logger.Info().Println("Jandan Spider got nothing new.")
+				logger.Debug("Jandan Spider got nothing new.")
 			}
 			firstTime = false
 
@@ -35,10 +35,10 @@ func (bot *Bot) jandanSpider(interval time.Duration) {
 func (bot *Bot) apiSpider(interval time.Duration) {
 
 	for {
-		logger.Info().Println("API Spider is working!")
+		logger.Debug("API Spider is working!")
 		comments, err := jd.GetAllComment()
 		if err != nil {
-			logger.Error().Println("API Spider failed to get comment: " + err.Error())
+			logger.Error("API Spider failed to get comment: " + err.Error())
 		} else {
 			bot.saveCommentsToDB(comments)
 		}
@@ -48,7 +48,7 @@ func (bot *Bot) apiSpider(interval time.Duration) {
 }
 
 func (bot *Bot) filterHot(hots *[]jd.Hot) {
-	logger.Info().Println("Filtering hot...")
+	logger.Debug("Filtering hot...")
 	newHots := []jd.Hot{}
 	for _, hot := range *hots {
 		if !bot.hotExists(&hot) {
@@ -64,7 +64,7 @@ func (bot *Bot) sendHot(hots []jd.Hot) {
 	picSuber, _ := bot.getPicSubscriber()
 	go bot.sendOOXXSubscription(ooxxSuber, hots)
 	go bot.sendPicSubscription(picSuber, hots)
-	logger.Info().Println("Sending Hots: " + fmt.Sprintf("%v", hots))
+	logger.Debug("Sending Hots: " + fmt.Sprintf("%v", hots))
 
 }
 

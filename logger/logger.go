@@ -6,28 +6,31 @@ import (
 )
 
 var (
-	infoLogger    *log.Logger
+	DebugFlag     bool
+	debugLogger   *log.Logger
 	warningLogger *log.Logger
 	errorLogger   *log.Logger
 )
 
-func Info() *log.Logger {
-	if infoLogger == nil {
-		infoLogger = log.New(os.Stdout, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+func Debug(msg string) {
+	if debugLogger == nil {
+		debugLogger = log.New(os.Stdout, "DEBUG: ", log.Ldate|log.Ltime|log.Lshortfile)
 	}
-	return infoLogger
+	if DebugFlag {
+		debugLogger.Output(2, msg)
+	}
 }
 
-func Warning() *log.Logger {
+func Warning(msg string) {
 	if warningLogger == nil {
 		warningLogger = log.New(os.Stdout, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
 	}
-	return warningLogger
+	warningLogger.Output(2, msg)
 }
 
-func Error() *log.Logger {
+func Error(msg string) {
 	if errorLogger == nil {
 		errorLogger = log.New(os.Stdout, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 	}
-	return errorLogger
+	errorLogger.Output(2, msg)
 }

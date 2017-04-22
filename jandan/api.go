@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/qsz13/ooxxbot/logger"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -18,7 +19,6 @@ func parsePage() ([]Hot, error) {
 	}
 	parsePicHot(doc, &hots)
 	parseOOXXHot(doc, &hots)
-	//fmt.Println(hots)
 
 	return hots, nil
 }
@@ -68,6 +68,7 @@ func parsePicHot(doc *goquery.Document, hots *[]Hot) {
 				return
 			}
 			content = dataCleaning(content)
+			logger.Debug(content)
 
 			hot.Content = content
 			hot.Type = PIC_TYPE
@@ -89,7 +90,7 @@ func dataCleaning(content string) string {
 func GetHot() ([]Hot, error) {
 	hots, err := parsePage()
 	if err != nil {
-		fmt.Println(err)
+		logger.Error(err.Error())
 		return nil, err
 	}
 	return hots, nil
