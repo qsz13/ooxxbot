@@ -140,6 +140,8 @@ func getCommentByAPI(jdType JandanType) ([]Comment, error) {
 		cr.Comments[i].Content = cleanComment(comment.Content)
 	}
 
+	logger.Debug(cr.Comments)
+
 	return cr.Comments, nil
 }
 

@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"log"
 	"os"
 )
@@ -12,12 +13,12 @@ var (
 	errorLogger   *log.Logger
 )
 
-func Debug(msg string) {
+func Debug(msg ...interface{}) {
 	if debugLogger == nil {
 		debugLogger = log.New(os.Stdout, "DEBUG: ", log.Ldate|log.Ltime|log.Lshortfile)
 	}
 	if DebugFlag {
-		debugLogger.Output(2, msg)
+		debugLogger.Output(2, fmt.Sprintf("%v", msg))
 	}
 }
 

@@ -8,24 +8,23 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type Bot struct {
-	Token    string
+	token    string
 	client   *http.Client
 	db       *sql.DB
 	Messages chan *Message
 	Queries  chan *InlineQuery
+	spider   *Spider
 }
 
 func NewBot(token string, clientProxy *rc.ClientProxy, db_dsn string) *Bot {
 	bot := new(Bot)
-	bot.Token = token
+	bot.token = token
 	bot.client, _ = rc.GetClient(clientProxy)
 	bot.db, _ = initDBConn(db_dsn)
-	go bot.jandanSpider(1800 * time.Second)
-	go bot.apiSpider(60 * time.Second)
+	bot.spider = NewSpider(bot)
 	return bot
 }
 
@@ -54,6 +53,7 @@ func initDBConn(db_dsn string) (*sql.DB, error) {
 }
 
 func (bot *Bot) Start() {
+	bot.spider.Start()
 	bot.loop(bot.Messages, bot.Queries)
 }
 

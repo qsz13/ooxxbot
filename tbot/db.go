@@ -197,39 +197,30 @@ func (bot *Bot) getOOXXSubscriber() ([]int, error) {
 	return subscribers, err
 }
 
-func (bot *Bot) saveCommentsToDB(comments []jd.Comment) {
-	sqlStr := "INSERT INTO ooxxbot.jandan(id, content, `type`, oo, xx) VALUES "
-	vals := []interface{}{}
-
-	for _, comment := range comments {
-		sqlStr += "(?, ?, ?, ?, ?),"
-		vals = append(vals, comment.ID, comment.Content, strconv.Itoa(int(comment.Type)), strconv.Itoa(int(comment.OO)), strconv.Itoa(int(comment.XX)))
-	}
-	//trim the last ,
-	sqlStr = sqlStr[0 : len(sqlStr)-1]
-	sqlEnding := " ON DUPLICATE KEY UPDATE content=VALUES(content),`type`=VALUES(`type`),oo=VALUES(oo), xx=VALUES(xx);"
-	sqlStr += sqlEnding
-	//prepare the statement
-	stmt, err := bot.db.Prepare(sqlStr)
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
+func (spider *Spider) saveCommentsToDB(comments []jd.Comment) {
+	sqlStr := "INSERT INTO jandan (id, content, category, oo, xx) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (id) DO UPDATE SET content=excluded.content,category=excluded.category,oo=excluded.oo, xx=excluded.xx;"
+	stmt, err := spider.db.Prepare(sqlStr)
 	defer stmt.Close()
 
-	//format all vals at once
-	_, err = stmt.Exec(vals...)
 	if err != nil {
 		logger.Error(err.Error())
 		return
 	}
+	for _, comment := range comments {
+		sqlStr += " (unnest(?),unnest(?),unnest(?),unnest(?),unnest(?)),"
+		_, err = stmt.Exec(comment.ID, comment.Content, strconv.Itoa(int(comment.Type)), strconv.Itoa(int(comment.OO)), strconv.Itoa(int(comment.XX)))
+		if err != nil {
+			logger.Error(err.Error())
+		}
+	}
+	//format all vals at once
 	logger.Debug("Comment Saved!")
 
 }
 
 func (bot *Bot) getRandomComment(jdType jd.JandanType) (string, error) {
 	content := ""
-	stmt, err := bot.db.Prepare("SELECT content FROM ooxxbot.jandan WHERE `type` = ? AND oo*2 > xx ORDER BY RAND() LIMIT 1;")
+	stmt, err := bot.db.Prepare("SELECT content FROM ooxxbot.jandan WHERE category = ? AND oo*2 > xx ORDER BY RAND() LIMIT 1;")
 	if err != nil {
 		logger.Error(err.Error())
 		return content, err

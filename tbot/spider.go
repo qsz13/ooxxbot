@@ -1,26 +1,45 @@
 package tbot
 
 import (
+	"database/sql"
 	"fmt"
 	jd "github.com/qsz13/ooxxbot/jandan"
 	"github.com/qsz13/ooxxbot/logger"
 	"time"
 )
 
-func (bot *Bot) jandanSpider(interval time.Duration) {
+type Spider struct {
+	bot *Bot
+	db  *sql.DB
+}
+
+func NewSpider(bot *Bot) *Spider {
+	spider := new(Spider)
+	spider.bot = bot
+	spider.db = bot.db
+	return spider
+}
+
+func (spider *Spider) Start() {
+	//go bot.jandanSpider(1800 * time.Second)
+	go spider.apiSpider(60 * time.Second)
+
+}
+
+/*func (spider *Spider) jandanSpider(interval time.Duration) {
 	firstTime := true
 	for {
 		logger.Debug("Jandan Spider is working!")
 		hots, err := jd.GetHot()
 		if err != nil {
-			logger.Error("Jandan Spider get hot failed: " + err.Error())
+			logger.Error("Jandan Spider get top failed: " + err.Error())
 		} else {
-			bot.filterHot(&hots)
+			spider.filterHot(&hots)
 			if len(hots) > 0 {
 				if !firstTime {
-					bot.sendHot(hots)
+					spider.bot.sendHot(hots)
 				}
-				bot.saveSent(hots)
+				spider.bot.saveSent(hots)
 			} else {
 				logger.Debug("Jandan Spider got nothing new.")
 			}
@@ -30,17 +49,16 @@ func (bot *Bot) jandanSpider(interval time.Duration) {
 
 		time.Sleep(interval)
 	}
-}
+}*/
 
-func (bot *Bot) apiSpider(interval time.Duration) {
-
+func (spider *Spider) apiSpider(interval time.Duration) {
 	for {
 		logger.Debug("API Spider is working!")
 		comments, err := jd.GetAllComment()
 		if err != nil {
 			logger.Error("API Spider failed to get comment: " + err.Error())
 		} else {
-			bot.saveCommentsToDB(comments)
+			spider.saveCommentsToDB(comments)
 		}
 		time.Sleep(interval)
 	}

@@ -95,7 +95,7 @@ func (bot *Bot) sendMessage(
 }
 
 func (bot *Bot) getMethodURL(method string) string {
-	return fmt.Sprintf("https://api.telegram.org/bot%s/%s", bot.Token, method)
+	return fmt.Sprintf("https://api.telegram.org/bot%s/%s", bot.token, method)
 }
 
 func (bot *Bot) sendGET(method string, params map[string]string) ([]byte, error) {
