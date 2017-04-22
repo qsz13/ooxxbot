@@ -220,12 +220,11 @@ func (spider *Spider) saveCommentsToDB(comments []jd.Comment) {
 
 func (bot *Bot) getRandomComment(jdType jd.JandanType) (string, error) {
 	content := ""
-	stmt, err := bot.db.Prepare("SELECT content FROM ooxxbot.jandan WHERE category = ? AND oo*2 > xx ORDER BY RAND() LIMIT 1;")
+	stmt, err := bot.db.Prepare("SELECT content FROM jandan WHERE category=$1 AND oo > 2*xx ORDER BY RANDOM() LIMIT 1;")
 	if err != nil {
 		logger.Error(err.Error())
 		return content, err
 	}
-
 	err = stmt.QueryRow(jdType).Scan(&content)
 	if err != nil {
 		logger.Error(err.Error())
