@@ -145,7 +145,7 @@ func (bot *Bot) saveSentTops(tops []jd.Comment) {
 
 func (bot *Bot) getPicSubscriber() ([]int, error) {
 	subscribers := []int{}
-	rows, err := bot.db.Query("SELECT \"user\" FROM subscription where pic=1;")
+	rows, err := bot.db.Query("SELECT \"user\" FROM subscription where pic=true;")
 	if err != nil {
 		logger.Error(err.Error())
 		return subscribers, err
@@ -169,7 +169,7 @@ func (bot *Bot) getPicSubscriber() ([]int, error) {
 
 func (bot *Bot) getOOXXSubscriber() ([]int, error) {
 	subscribers := []int{}
-	rows, err := bot.db.Query("SELECT \"user\" FROM subscription where ooxx=1;")
+	rows, err := bot.db.Query("SELECT \"user\" FROM subscription where ooxx=true;")
 	if err != nil {
 		logger.Error(err.Error())
 		return subscribers, err
