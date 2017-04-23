@@ -38,7 +38,7 @@ func (spider *Spider) Start() {
 }
 
 func (spider *Spider) topSpider() {
-	firstTime := true
+	//firstTime := true
 	for {
 		logger.Debug("Jandan Spider is working!")
 		tops, err := jd.GetTop()
@@ -47,14 +47,14 @@ func (spider *Spider) topSpider() {
 		} else {
 			spider.filterTop(&tops)
 			if len(tops) > 0 {
-				if !firstTime {
-					spider.bot.sendTop(tops)
-				}
+				//			if !firstTime {
+				spider.bot.sendTop(tops)
+				//			}
 				spider.bot.saveSentTops(tops)
 			} else {
 				logger.Debug("Jandan Spider got nothing new.")
 			}
-			firstTime = false
+			//		firstTime = false
 
 		}
 		time.Sleep(time.Duration(spider.getInterval()) * time.Second)
