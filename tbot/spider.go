@@ -5,6 +5,8 @@ import (
 	"fmt"
 	jd "github.com/qsz13/ooxxbot/jandan"
 	"github.com/qsz13/ooxxbot/logger"
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -20,13 +22,22 @@ func NewSpider(bot *Bot) *Spider {
 	return spider
 }
 
+func (spider *Spider) getInterval() int {
+	interval, err := strconv.Atoi(os.Getenv("SPIDER_INTERVAL"))
+	if err != nil {
+		interval = 600
+	}
+	return interval
+}
+
 func (spider *Spider) Start() {
-	go spider.topSpider(1800 * time.Second)
-	go spider.apiSpider(60 * time.Second)
+
+	go spider.topSpider()
+	go spider.apiSpider()
 
 }
 
-func (spider *Spider) topSpider(interval time.Duration) {
+func (spider *Spider) topSpider() {
 	firstTime := true
 	for {
 		logger.Debug("Jandan Spider is working!")
@@ -46,12 +57,11 @@ func (spider *Spider) topSpider(interval time.Duration) {
 			firstTime = false
 
 		}
-
-		time.Sleep(interval)
+		time.Sleep(time.Duration(spider.getInterval()) * time.Second)
 	}
 }
 
-func (spider *Spider) apiSpider(interval time.Duration) {
+func (spider *Spider) apiSpider() {
 	for {
 		logger.Debug("API Spider is working!")
 		comments, err := jd.GetAllComment()
@@ -60,7 +70,7 @@ func (spider *Spider) apiSpider(interval time.Duration) {
 		} else {
 			spider.saveCommentsToDB(comments)
 		}
-		time.Sleep(interval)
+		time.Sleep(time.Duration(spider.getInterval()) * time.Second)
 	}
 
 }
