@@ -22,29 +22,33 @@ func (bot *Bot) getIP(message *Message) {
 	res, err := http.Get("http://wtfismyip.com/text")
 	if err != nil {
 		logger.Error("Get IP failed: " + err.Error())
+		bot.ReplyError(message, err)
 		return
 	}
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		logger.Error("Read response body failed:" + err.Error())
+		bot.ReplyError(message, err)
+
 		return
 	}
 	ip := string(body)
 	m, err := bot.ReplyText(message.Chat.ID, ip)
 	if err != nil {
 		logger.Error("Reply IP failed:" + err.Error())
+		bot.ReplyError(message, err)
 		return
 	}
 	logger.Debug("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ", " + m.Text)
 
 }
 
-func (bot *Bot) sendHotMessage(userid int, hot jd.Hot) {
-	content := hot.Content
-	if hot.Type == jd.OOXX_TYPE {
+func (bot *Bot) sendTopMessage(userid int, top jd.Comment) {
+	content := top.Content
+	if top.Type == jd.OOXX_TYPE {
 		content = "[OOXX]\n" + content
-	} else if hot.Type == jd.PIC_TYPE {
+	} else if top.Type == jd.PIC_TYPE {
 		content = "[Pic]\n" + content
 	}
 	bot.ReplyHTML(userid, content)
@@ -55,11 +59,13 @@ func (bot *Bot) getRandomOOXX(message *Message) {
 	content, err := bot.getRandomComment(jd.OOXX_TYPE)
 	if err != nil {
 		logger.Error("Get random comment failed: " + err.Error())
+		bot.ReplyError(message, err)
 	} else {
 		content = "[OOXX]\n" + content
 		_, err := bot.ReplyHTML(message.Chat.ID, content)
 		if err != nil {
 			logger.Error("Reply random OOXX failed:" + err.Error())
+			bot.ReplyError(message, err)
 			return
 		}
 		logger.Debug("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ", " + content)
@@ -70,11 +76,13 @@ func (bot *Bot) getRandomPic(message *Message) {
 	content, err := bot.getRandomComment(jd.PIC_TYPE)
 	if err != nil {
 		logger.Error("Get random Pic failed: " + err.Error())
+		bot.ReplyError(message, err)
 	} else {
 		content = "[Pic]\n" + content
 		_, err := bot.ReplyHTML(message.Chat.ID, content)
 		if err != nil {
 			logger.Error("Reply random Pic failed:" + err.Error())
+			bot.ReplyError(message, err)
 			return
 		}
 		logger.Debug("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ", " + content)
@@ -88,11 +96,14 @@ func (bot *Bot) getLatestOOXX(message *Message) {
 	content := html.Content
 	if err != nil {
 		logger.Error("Get latest OOXX failed: " + err.Error())
+		bot.ReplyError(message, err)
 	} else {
 		content = "[OOXX]\n" + content
 		_, err := bot.ReplyHTML(message.Chat.ID, content)
 		if err != nil {
 			logger.Error("Reply Latest OOXX failed:" + err.Error())
+			bot.ReplyError(message, err)
+
 			return
 		}
 		logger.Debug("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ": " + content)
@@ -104,11 +115,13 @@ func (bot *Bot) getLatestPic(message *Message) {
 	content := html.Content
 	if err != nil {
 		logger.Error("Get latest Pic failed: " + err.Error())
+		bot.ReplyError(message, err)
 	} else {
 		content = "[Pic]\n" + content
 		_, err := bot.ReplyHTML(message.Chat.ID, content)
 		if err != nil {
 			logger.Error("Reply Latest Pic failed:" + err.Error())
+			bot.ReplyError(message, err)
 			return
 		}
 		logger.Debug("Message Sent to " + message.From.FirstName + " " + message.From.LastName + ": " + content)

@@ -23,9 +23,3 @@ type Comment struct {
 	XX      int        `json:"vote_negative,string"`
 	Type    JandanType `json:"-"`
 }
-
-type Hot struct {
-	URL     string
-	Content string
-	Type    JandanType
-}

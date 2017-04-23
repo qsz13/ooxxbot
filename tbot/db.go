@@ -1,14 +1,13 @@
 package tbot
 
 import (
-	_ "github.com/go-sql-driver/mysql"
 	jd "github.com/qsz13/ooxxbot/jandan"
 	"github.com/qsz13/ooxxbot/logger"
 	"strconv"
 )
 
 func (bot *Bot) registerUser(message *Message) error {
-	stmt, err := bot.db.Prepare("INSERT INTO ooxxbot.user(id, first_name, last_name, user_name) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE first_name=VALUES(first_name),last_name=VALUES(last_name),user_name=VALUES(user_name);")
+	stmt, err := bot.db.Prepare("INSERT INTO \"user\"(id, first_name, last_name, user_name) VALUES ($1, $2, $3, $4) ON CONFLICT (id) DO UPDATE SET first_name=excluded.first_name,last_name=excluded.last_name,user_name=excluded.user_name;")
 	if err != nil {
 		logger.Error(err.Error())
 		return err
@@ -31,7 +30,7 @@ func (bot *Bot) registerUser(message *Message) error {
 }
 
 func (bot *Bot) subscribeOOXXInDB(message *Message) error {
-	stmt, err := bot.db.Prepare("INSERT INTO ooxxbot.subscription(user, ooxx) VALUES ( ?, ?) ON DUPLICATE KEY UPDATE user=VALUES(user),ooxx=VALUES(ooxx);")
+	stmt, err := bot.db.Prepare("INSERT INTO subscription(\"user\", ooxx) VALUES ( $1, $2) ON CONFLICT (\"user\") DO UPDATE SET \"user\"=excluded.\"user\",ooxx=excluded.ooxx;")
 	if err != nil {
 		logger.Error(err.Error())
 		return err
@@ -49,7 +48,7 @@ func (bot *Bot) subscribeOOXXInDB(message *Message) error {
 }
 
 func (bot *Bot) subscribePicInDB(message *Message) error {
-	stmt, err := bot.db.Prepare("INSERT INTO ooxxbot.subscription(user, pic) VALUES ( ?, ?) ON DUPLICATE KEY UPDATE user=VALUES(user),pic=VALUES(pic);")
+	stmt, err := bot.db.Prepare("INSERT INTO subscription(\"user\", pic) VALUES ( $1, $2) ON CONFLICT (\"user\") DO UPDATE SET \"user\"=excluded.\"user\",pic=excluded.pic;")
 	if err != nil {
 		logger.Error(err.Error())
 		return err
@@ -67,7 +66,7 @@ func (bot *Bot) subscribePicInDB(message *Message) error {
 }
 
 func (bot *Bot) unsubscribeOOXXInDB(message *Message) error {
-	stmt, err := bot.db.Prepare("INSERT INTO ooxxbot.subscription(user, ooxx) VALUES ( ?, ?) ON DUPLICATE KEY UPDATE user=VALUES(user),ooxx=VALUES(ooxx);")
+	stmt, err := bot.db.Prepare("INSERT INTO subscription(\"user\", ooxx) VALUES ( $1, $2) ON CONFLICT (\"user\") DO UPDATE SET \"user\"=excluded.\"user\",ooxx=excluded.ooxx;")
 	if err != nil {
 		logger.Error(err.Error())
 		return err
@@ -85,7 +84,7 @@ func (bot *Bot) unsubscribeOOXXInDB(message *Message) error {
 }
 
 func (bot *Bot) unsubscribePicInDB(message *Message) error {
-	stmt, err := bot.db.Prepare("INSERT INTO ooxxbot.subscription(user, pic) VALUES ( ?, ?) ON DUPLICATE KEY UPDATE user=VALUES(user),pic=VALUES(pic);")
+	stmt, err := bot.db.Prepare("INSERT INTO subscription(\"user\", pic) VALUES ( $1, $2) ON CONFLICT (\"user\") DO UPDATE SET \"user\"=excluded.\"user\", pic=excluded.pic;")
 	if err != nil {
 		logger.Error(err.Error())
 		return err
@@ -102,56 +101,51 @@ func (bot *Bot) unsubscribePicInDB(message *Message) error {
 	return nil
 }
 
-func (bot *Bot) hotExists(hot *jd.Hot) bool {
-	stmt, err := bot.db.Prepare("SELECT count(*) from ooxxbot.hot where url = ?")
+func (spider *Spider) topExists(top *jd.Comment) bool {
+	stmt, err := spider.db.Prepare("SELECT top from jandan where id = $1")
 	if err != nil {
 		logger.Error(err.Error())
 		return true
 	}
-	var count int
-	err = stmt.QueryRow(hot.URL).Scan(&count)
+
+	var isTop bool
+	err = stmt.QueryRow(top.ID).Scan(&top)
 	if err != nil {
-		logger.Error(err.Error())
-		return true
+		return false
 	}
-	if count > 0 {
+	if isTop {
 		return true
 	}
 	return false
 
 }
 
-func (bot *Bot) saveSent(hots []jd.Hot) {
-	sqlStr := "INSERT INTO ooxxbot.hot(url, content, type) VALUES "
-	vals := []interface{}{}
+func (bot *Bot) saveSentTops(tops []jd.Comment) {
+	sqlStr := "INSERT INTO jandan (id, content, category, oo, xx, top) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (id) DO UPDATE SET top=true;"
 
-	for _, row := range hots {
-		sqlStr += "(?, ?, ?),"
-		vals = append(vals, row.URL, row.Content, strconv.Itoa(int(row.Type)))
-	}
-	//trim the last ,
-	sqlStr = sqlStr[0 : len(sqlStr)-1]
-	//prepare the statement
 	stmt, err := bot.db.Prepare(sqlStr)
+	defer stmt.Close()
 	if err != nil {
 		logger.Error(err.Error())
 		return
 	}
-	defer stmt.Close()
+
+	for _, comment := range tops {
+		_, err = stmt.Exec(comment.ID, comment.Content, strconv.Itoa(int(comment.Type)), strconv.Itoa(int(comment.OO)), strconv.Itoa(int(comment.XX)), false)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+
+	}
 
 	//format all vals at once
-	_, err = stmt.Exec(vals...)
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-	logger.Debug("Hot Saved!")
+	logger.Debug("Top Saved!")
 
 }
 
 func (bot *Bot) getPicSubscriber() ([]int, error) {
 	subscribers := []int{}
-	rows, err := bot.db.Query("SELECT user FROM ooxxbot.subscription where pic=1;")
+	rows, err := bot.db.Query("SELECT \"user\" FROM subscription where pic=1;")
 	if err != nil {
 		logger.Error(err.Error())
 		return subscribers, err
@@ -175,7 +169,7 @@ func (bot *Bot) getPicSubscriber() ([]int, error) {
 
 func (bot *Bot) getOOXXSubscriber() ([]int, error) {
 	subscribers := []int{}
-	rows, err := bot.db.Query("SELECT user FROM ooxxbot.subscription where ooxx=1;")
+	rows, err := bot.db.Query("SELECT \"user\" FROM subscription where ooxx=1;")
 	if err != nil {
 		logger.Error(err.Error())
 		return subscribers, err
@@ -198,7 +192,7 @@ func (bot *Bot) getOOXXSubscriber() ([]int, error) {
 }
 
 func (spider *Spider) saveCommentsToDB(comments []jd.Comment) {
-	sqlStr := "INSERT INTO jandan (id, content, category, oo, xx) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (id) DO UPDATE SET content=excluded.content,category=excluded.category,oo=excluded.oo, xx=excluded.xx;"
+	sqlStr := "INSERT INTO jandan (id, content, category, oo, xx, top) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (id) DO UPDATE SET content=excluded.content,category=excluded.category,oo=excluded.oo, xx=excluded.xx;"
 	stmt, err := spider.db.Prepare(sqlStr)
 	defer stmt.Close()
 
@@ -207,8 +201,7 @@ func (spider *Spider) saveCommentsToDB(comments []jd.Comment) {
 		return
 	}
 	for _, comment := range comments {
-		sqlStr += " (unnest(?),unnest(?),unnest(?),unnest(?),unnest(?)),"
-		_, err = stmt.Exec(comment.ID, comment.Content, strconv.Itoa(int(comment.Type)), strconv.Itoa(int(comment.OO)), strconv.Itoa(int(comment.XX)))
+		_, err = stmt.Exec(comment.ID, comment.Content, strconv.Itoa(int(comment.Type)), strconv.Itoa(int(comment.OO)), strconv.Itoa(int(comment.XX)), false)
 		if err != nil {
 			logger.Error(err.Error())
 		}

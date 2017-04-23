@@ -13,12 +13,17 @@ var (
 	errorLogger   *log.Logger
 )
 
-func Debug(msg ...interface{}) {
+func Debug(msg interface{}) {
 	if debugLogger == nil {
 		debugLogger = log.New(os.Stdout, "DEBUG: ", log.Ldate|log.Ltime|log.Lshortfile)
 	}
 	if DebugFlag {
-		debugLogger.Output(2, fmt.Sprintf("%v", msg))
+		switch msg.(type) {
+		default:
+			debugLogger.Output(2, fmt.Sprintf("%v", msg))
+		case string:
+			debugLogger.Output(2, msg.(string))
+		}
 	}
 }
 

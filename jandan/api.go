@@ -7,72 +7,80 @@ import (
 	"github.com/qsz13/ooxxbot/logger"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
-func parsePage() ([]Hot, error) {
-	hots := make([]Hot, 0)
+func parsePage() ([]Comment, error) {
+	tops := make([]Comment, 0)
 	doc, err := goquery.NewDocument("http://jandan.net")
 	if err != nil {
 		fmt.Println(err)
-		return hots, err
+		return tops, err
 	}
-	parsePicHot(doc, &hots)
-	parseOOXXHot(doc, &hots)
+	parsePicTop(doc, &tops)
+	parseOOXXTop(doc, &tops)
 
-	return hots, nil
+	return tops, nil
 }
 
-func parseOOXXHot(doc *goquery.Document, hots *[]Hot) {
+func parseOOXXTop(doc *goquery.Document, tops *[]Comment) {
 	doc.Find("img").Remove()
 	doc.Find("div#list-girl div.in").Each(func(i int, s *goquery.Selection) {
-		hot := Hot{}
 		s.Find("div.acv_comment").Each(func(i int, s *goquery.Selection) {
+			top := Comment{}
 			url, exist := s.Find("div.vote").Attr("id")
 			if !exist {
 				fmt.Println("Link not exists")
 				return
 			}
-			url = strings.Replace(url, "vote-", "", -1)
-			hot.URL = url
+			idStr := strings.Replace(url, "vote-", "", -1)
+			top.ID, _ = strconv.Atoi(idStr)
 			content, err := s.Find("p").Html()
 			if err != nil {
-				fmt.Println(err)
+				logger.Error("Error while parsing OOXX Top: " + err.Error())
 				return
 			}
 			content = dataCleaning(content)
+			top.Content = content
+			top.Type = OOXX_TYPE
+			oo := s.Find("span#cos_support-" + idStr)
+			xx := s.Find("span#cos_unsupport-" + idStr)
+			top.OO, _ = strconv.Atoi(oo.Text())
+			top.XX, _ = strconv.Atoi(xx.Text())
 
-			hot.Content = content
-			hot.Type = OOXX_TYPE
-			*hots = append(*hots, hot)
+			*tops = append(*tops, top)
 		})
 	})
 
 }
 
-func parsePicHot(doc *goquery.Document, hots *[]Hot) {
+func parsePicTop(doc *goquery.Document, tops *[]Comment) {
 	doc.Find("img").Remove()
 	doc.Find("div#list-pic div.in").Each(func(i int, s *goquery.Selection) {
-		hot := Hot{}
 		s.Find("div.acv_comment").Each(func(i int, s *goquery.Selection) {
+			top := Comment{}
 			url, exist := s.Find("div.vote").Attr("id")
 			if !exist {
 				fmt.Println("Link not exists")
 				return
 			}
-			url = strings.Replace(url, "vote-", "", -1)
-			hot.URL = url
+			idStr := strings.Replace(url, "vote-", "", -1)
+			top.ID, _ = strconv.Atoi(idStr)
 			content, err := s.Find("p").Html()
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
 			content = dataCleaning(content)
-			logger.Debug(content)
+			top.Content = content
+			top.Type = PIC_TYPE
+			oo := s.Find("span#cos_support-" + idStr)
+			xx := s.Find("span#cos_unsupport-" + idStr)
+			top.OO, _ = strconv.Atoi(oo.Text())
+			top.XX, _ = strconv.Atoi(xx.Text())
 
-			hot.Content = content
-			hot.Type = PIC_TYPE
-			*hots = append(*hots, hot)
+			*tops = append(*tops, top)
 		})
 	})
 
@@ -87,13 +95,15 @@ func dataCleaning(content string) string {
 	return content
 }
 
-func GetHot() ([]Hot, error) {
-	hots, err := parsePage()
+func GetTop() ([]Comment, error) {
+	tops, err := parsePage()
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, err
 	}
-	return hots, nil
+	logger.Debug("Top Comments")
+	logger.Debug(tops)
+	return tops, nil
 
 }
 

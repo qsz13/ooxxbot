@@ -21,25 +21,25 @@ func NewSpider(bot *Bot) *Spider {
 }
 
 func (spider *Spider) Start() {
-	//go bot.jandanSpider(1800 * time.Second)
+	go spider.topSpider(1800 * time.Second)
 	go spider.apiSpider(60 * time.Second)
 
 }
 
-/*func (spider *Spider) jandanSpider(interval time.Duration) {
+func (spider *Spider) topSpider(interval time.Duration) {
 	firstTime := true
 	for {
 		logger.Debug("Jandan Spider is working!")
-		hots, err := jd.GetHot()
+		tops, err := jd.GetTop()
 		if err != nil {
 			logger.Error("Jandan Spider get top failed: " + err.Error())
 		} else {
-			spider.filterHot(&hots)
-			if len(hots) > 0 {
+			spider.filterTop(&tops)
+			if len(tops) > 0 {
 				if !firstTime {
-					spider.bot.sendHot(hots)
+					spider.bot.sendTop(tops)
 				}
-				spider.bot.saveSent(hots)
+				spider.bot.saveSentTops(tops)
 			} else {
 				logger.Debug("Jandan Spider got nothing new.")
 			}
@@ -49,7 +49,7 @@ func (spider *Spider) Start() {
 
 		time.Sleep(interval)
 	}
-}*/
+}
 
 func (spider *Spider) apiSpider(interval time.Duration) {
 	for {
@@ -65,43 +65,43 @@ func (spider *Spider) apiSpider(interval time.Duration) {
 
 }
 
-func (bot *Bot) filterHot(hots *[]jd.Hot) {
-	logger.Debug("Filtering hot...")
-	newHots := []jd.Hot{}
-	for _, hot := range *hots {
-		if !bot.hotExists(&hot) {
-			newHots = append(newHots, hot)
+func (spider *Spider) filterTop(tops *[]jd.Comment) {
+	logger.Debug("Filtering top...")
+	newTops := []jd.Comment{}
+	for _, top := range *tops {
+		if !spider.topExists(&top) {
+			newTops = append(newTops, top)
 		}
 
 	}
-	*hots = newHots
+	*tops = newTops
 }
 
-func (bot *Bot) sendHot(hots []jd.Hot) {
+func (bot *Bot) sendTop(tops []jd.Comment) {
 	ooxxSuber, _ := bot.getOOXXSubscriber()
 	picSuber, _ := bot.getPicSubscriber()
-	go bot.sendOOXXSubscription(ooxxSuber, hots)
-	go bot.sendPicSubscription(picSuber, hots)
-	logger.Debug("Sending Hots: " + fmt.Sprintf("%v", hots))
+	go bot.sendOOXXSubscription(ooxxSuber, tops)
+	go bot.sendPicSubscription(picSuber, tops)
+	logger.Debug("Sending Tops: " + fmt.Sprintf("%v", tops))
 
 }
 
-func (bot *Bot) sendOOXXSubscription(suber []int, hots []jd.Hot) {
+func (bot *Bot) sendOOXXSubscription(suber []int, tops []jd.Comment) {
 	for _, u := range suber {
-		for _, h := range hots {
+		for _, h := range tops {
 			if h.Type == jd.OOXX_TYPE {
-				bot.sendHotMessage(u, h)
+				bot.sendTopMessage(u, h)
 			}
 		}
 	}
 
 }
 
-func (bot *Bot) sendPicSubscription(suber []int, hots []jd.Hot) {
+func (bot *Bot) sendPicSubscription(suber []int, tops []jd.Comment) {
 	for _, u := range suber {
-		for _, h := range hots {
+		for _, h := range tops {
 			if h.Type == jd.PIC_TYPE {
-				bot.sendHotMessage(u, h)
+				bot.sendTopMessage(u, h)
 			}
 		}
 	}

@@ -162,7 +162,7 @@ func (bot *Bot) ExecCmd(message *Message) {
 	case "":
 		break
 	default:
-		bot.ReplyText(message.Chat.ID, "Incorrect, idiot!")
+		bot.ReplyText(message.Chat.ID, "Incorrect, idiot! /start")
 	}
 
 }
