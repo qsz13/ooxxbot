@@ -92,6 +92,9 @@ func dataCleaning(content string) string {
 	content = strings.Replace(content, "<br/>", "\r\n", -1)
 	content = strings.TrimSpace(content)
 	content = strings.Replace(content, " target=\"_blank\" class=\"view_img_link\"", "", -1)
+	if !strings.Contains(content, "http://") {
+		content = strings.Replace(content, "//", "http://", -1)
+	}
 	return content
 }
 

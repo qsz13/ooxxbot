@@ -109,7 +109,7 @@ func (spider *Spider) topExists(top *jd.Comment) bool {
 	}
 
 	var isTop bool
-	err = stmt.QueryRow(top.ID).Scan(&top)
+	err = stmt.QueryRow(top.ID).Scan(&isTop)
 	if err != nil {
 		return false
 	}
