@@ -1,8 +1,8 @@
-package tbot
+package spider
 
 import (
-	"database/sql"
-	"fmt"
+	"github.com/qsz13/ooxxbot/db"
+	dp "github.com/qsz13/ooxxbot/dispatcher"
 	jd "github.com/qsz13/ooxxbot/jandan"
 	"github.com/qsz13/ooxxbot/logger"
 	"os"
@@ -11,15 +11,12 @@ import (
 )
 
 type Spider struct {
-	bot *Bot
-	db  *sql.DB
+	dispatcher *dp.Dispatcher
+	db         *db.DB
 }
 
-func NewSpider(bot *Bot) *Spider {
-	spider := new(Spider)
-	spider.bot = bot
-	spider.db = bot.db
-	return spider
+func NewSpider(dispatcher *dp.Dispatcher, db *db.DB) *Spider {
+	return &Spider{dispatcher: dispatcher, db: db}
 }
 
 func (spider *Spider) getInterval() int {
@@ -39,6 +36,7 @@ func (spider *Spider) Start() {
 
 func (spider *Spider) topSpider() {
 	//firstTime := true
+	logger.Debug("!!!!!!!!!!!!!!!!!")
 	for {
 		logger.Debug("Jandan Spider is working!")
 		tops, err := jd.GetTop()
@@ -48,9 +46,9 @@ func (spider *Spider) topSpider() {
 			spider.filterTop(&tops)
 			if len(tops) > 0 {
 				//			if !firstTime {
-				spider.bot.sendTop(tops)
+				spider.dispatcher.SendJandanTop(tops)
 				//			}
-				spider.bot.saveSentTops(tops)
+				spider.db.SaveJandanTops(tops)
 			} else {
 				logger.Debug("Jandan Spider got nothing new.")
 			}
@@ -68,7 +66,7 @@ func (spider *Spider) apiSpider() {
 		if err != nil {
 			logger.Error("API Spider failed to get comment: " + err.Error())
 		} else {
-			spider.saveCommentsToDB(comments)
+			spider.db.SaveJandanToDB(comments)
 		}
 		time.Sleep(time.Duration(spider.getInterval()) * time.Second)
 	}
@@ -79,40 +77,10 @@ func (spider *Spider) filterTop(tops *[]jd.Comment) {
 	logger.Debug("Filtering top...")
 	newTops := []jd.Comment{}
 	for _, top := range *tops {
-		if !spider.topExists(&top) {
+		if !spider.db.TopExists(&top) {
 			newTops = append(newTops, top)
 		}
 
 	}
 	*tops = newTops
-}
-
-func (bot *Bot) sendTop(tops []jd.Comment) {
-	ooxxSuber, _ := bot.getOOXXSubscriber()
-	picSuber, _ := bot.getPicSubscriber()
-	go bot.sendOOXXSubscription(ooxxSuber, tops)
-	go bot.sendPicSubscription(picSuber, tops)
-	logger.Debug("Sending Tops: " + fmt.Sprintf("%v", tops))
-
-}
-
-func (bot *Bot) sendOOXXSubscription(suber []int, tops []jd.Comment) {
-	for _, u := range suber {
-		for _, h := range tops {
-			if h.Type == jd.OOXX_TYPE {
-				bot.sendTopMessage(u, h)
-			}
-		}
-	}
-
-}
-
-func (bot *Bot) sendPicSubscription(suber []int, tops []jd.Comment) {
-	for _, u := range suber {
-		for _, h := range tops {
-			if h.Type == jd.PIC_TYPE {
-				bot.sendTopMessage(u, h)
-			}
-		}
-	}
 }

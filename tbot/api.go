@@ -5,12 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/qsz13/ooxxbot/logger"
+	"github.com/qsz13/ooxxbot/model"
 	"io/ioutil"
 	"net/url"
 	"strconv"
 )
 
-func (bot *Bot) getMe() (*User, error) {
+func (bot *TBot) getMe() (*model.User, error) {
 	params := make(map[string]string)
 	body, err := bot.sendGET("getMe", params)
 
@@ -30,7 +31,7 @@ func (bot *Bot) getMe() (*User, error) {
 	}
 }
 
-func (bot *Bot) getUpdates(offset, limit, timeout int) ([]Update, error) {
+func (bot *TBot) getUpdates(offset, limit, timeout int) ([]Update, error) {
 	params := make(map[string]string)
 	params["offset"] = strconv.Itoa(offset)
 	if limit != 0 {
@@ -58,7 +59,7 @@ func (bot *Bot) getUpdates(offset, limit, timeout int) ([]Update, error) {
 }
 
 //TODO reply_markup
-func (bot *Bot) sendMessage(
+func (bot *TBot) sendMessage(
 	chat_id int, text, parse_mode string,
 	disable_web_page_preview, disable_notification bool,
 	reply_to_message_id int) (*Message, error) {
@@ -94,11 +95,11 @@ func (bot *Bot) sendMessage(
 
 }
 
-func (bot *Bot) getMethodURL(method string) string {
+func (bot *TBot) getMethodURL(method string) string {
 	return fmt.Sprintf("https://api.telegram.org/bot%s/%s", bot.token, method)
 }
 
-func (bot *Bot) sendGET(method string, params map[string]string) ([]byte, error) {
+func (bot *TBot) sendGET(method string, params map[string]string) ([]byte, error) {
 	urladdr := bot.getMethodURL(method)
 	if len(params) > 0 {
 		urladdr += "?"
@@ -106,7 +107,7 @@ func (bot *Bot) sendGET(method string, params map[string]string) ([]byte, error)
 	for k, v := range params {
 		urladdr = fmt.Sprintf("%s%s=%s&", urladdr, k, v)
 	}
-	logger.Debug("Get request to: " + urladdr)
+	//logger.Debug("Get request to: " + urladdr)
 	res, err := bot.client.Get(urladdr)
 	if err != nil {
 		logger.Error("Request for " + urladdr + " failed: " + err.Error())
@@ -121,7 +122,7 @@ func (bot *Bot) sendGET(method string, params map[string]string) ([]byte, error)
 	return body, err
 }
 
-func (bot *Bot) parseResult(body []byte, result interface{}) error {
+func (bot *TBot) parseResult(body []byte, result interface{}) error {
 	err := json.Unmarshal(body, &result)
 	if err != nil {
 		logger.Error("Parse json failed: " + err.Error() + ", Content:\n" + string(body))
@@ -129,13 +130,13 @@ func (bot *Bot) parseResult(body []byte, result interface{}) error {
 	return err
 }
 
-func (bot *Bot) sendPOST(method string, params map[string]string) ([]byte, error) {
+func (bot *TBot) sendPOST(method string, params map[string]string) ([]byte, error) {
 	urladdr := bot.getMethodURL(method)
 	form := make(url.Values)
 	for k, v := range params {
 		form.Set(k, v)
 	}
-	logger.Debug("POST request to: " + urladdr)
+	//logger.Debug("POST request to: " + urladdr)
 	res, err := bot.client.PostForm(urladdr, form)
 	if err != nil {
 		logger.Error("Request for " + urladdr + " failed: " + err.Error())

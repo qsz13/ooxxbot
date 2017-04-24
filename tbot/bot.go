@@ -1,63 +1,46 @@
 package tbot
 
 import (
-	"database/sql"
-	_ "github.com/lib/pq"
+	dp "github.com/qsz13/ooxxbot/dispatcher"
 	"github.com/qsz13/ooxxbot/logger"
 	rc "github.com/qsz13/ooxxbot/requestclient"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 )
 
-type Bot struct {
-	token    string
-	client   *http.Client
-	db       *sql.DB
-	Messages chan *Message
-	Queries  chan *InlineQuery
-	spider   *Spider
+type TBot struct {
+	token      string
+	dispatcher *dp.Dispatcher
+	client     *http.Client
+	Messages   chan *Message
+	Queries    chan *InlineQuery
 }
 
-func NewBot(token string, clientProxy *rc.ClientProxy, db_dsn string) *Bot {
-	bot := new(Bot)
-	bot.token = token
+func NewBot(dispatcher *dp.Dispatcher, clientProxy *rc.ClientProxy) *TBot {
+	bot := new(TBot)
+	bot.dispatcher = dispatcher
+	bot.dispatcher.Bot = bot
+	bot.token = os.Getenv("TOKEN")
 	bot.client, _ = rc.GetClient(clientProxy)
-	bot.db, _ = initDBConn(db_dsn)
-	bot.spider = NewSpider(bot)
+	bot.Messages = make(chan *Message, 1000)
 	return bot
 }
 
-func initDBConn(db_dsn string) (*sql.DB, error) {
-	logger.Debug("Init DB connection")
-
-	var dberr error
-	for retry := 1; retry <= 3; retry++ {
-		db, err := sql.Open("postgres", db_dsn)
-		if err != nil {
-			logger.Warning("DB open failed, retry times: " + strconv.Itoa(retry) + ", reason:" + err.Error())
-			dberr = err
-			continue
-		}
-		err = db.Ping()
-		if err != nil {
-			logger.Warning("DB ping failed, retry times: " + strconv.Itoa(retry) + ", reason:" + err.Error())
-			dberr = err
-			continue
-		}
-		logger.Debug("DB connection success.")
-		return db, nil
-	}
-	logger.Error("DB connection failed.")
-	return nil, dberr
-}
-
-func (bot *Bot) Start() {
-	bot.spider.Start()
+func (bot *TBot) Start() {
+	go bot.handleMessages()
 	bot.loop(bot.Messages, bot.Queries)
 }
 
-func (bot *Bot) loop(messages chan *Message, queries chan *InlineQuery) {
+func (bot *TBot) handleMessages() {
+	for message := range bot.Messages {
+		logger.Debug("Message from " + message.From.FirstName + " " + message.From.LastName + ": " + message.Text)
+		bot.ExecCmd(message)
+	}
+}
+
+func (bot *TBot) loop(messages chan *Message, queries chan *InlineQuery) {
 	lastUpdate := 0
 	for {
 
@@ -84,17 +67,16 @@ func (bot *Bot) loop(messages chan *Message, queries chan *InlineQuery) {
 	}
 }
 
-func (bot *Bot) ReplyText(ChatID int, Text string) (*Message, error) {
+func (bot *TBot) ReplyText(ChatID int, Text string) (*Message, error) {
 	m, err := bot.sendMessage(ChatID, Text, "", false, false, -1)
 	return m, err
 }
 
-func (bot *Bot) ReplyHTML(ChatID int, html string) (*Message, error) {
+func (bot *TBot) ReplyHTML(ChatID int, html string) error {
 
 	texts := strings.Split(html, "\r\n")
 	size := len(texts)
 	var (
-		m   *Message
 		err error
 	)
 	var messageList []string
@@ -113,17 +95,17 @@ func (bot *Bot) ReplyHTML(ChatID int, html string) (*Message, error) {
 		if size != 1 {
 			text = "(" + strconv.Itoa(i) + "/" + strconv.Itoa(size) + ")" + text
 		}
-		m, err = bot.sendMessage(ChatID, text, "HTML", false, false, -1)
+		_, err = bot.sendMessage(ChatID, text, "HTML", false, false, -1)
 	}
-	return m, err
+	return err
 }
 
-func (bot *Bot) ReplyError(message *Message, err error) {
+func (bot *TBot) ReplyError(message *Message, err error) {
 	m := "sorry, sth wrong: " + err.Error()
 	bot.ReplyText(message.Chat.ID, m)
 }
 
-func (bot *Bot) ExecCmd(message *Message) {
+func (bot *TBot) ExecCmd(message *Message) {
 	cmd := strings.ToLower(message.Text)
 	switch cmd {
 	case "/start":

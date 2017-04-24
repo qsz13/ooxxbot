@@ -3,22 +3,23 @@ package tbot
 import (
 	jd "github.com/qsz13/ooxxbot/jandan"
 	"github.com/qsz13/ooxxbot/logger"
+	"github.com/qsz13/ooxxbot/model"
 	"io/ioutil"
 	"net/http"
 )
 
-func (bot *Bot) getHelp(message *Message) {
+func (bot *TBot) getHelp(message *Message) {
 	help := "/ip to check IP\n\n/ooxx to get random ooxx\n/pic to get random pics\n\n/looxx to get latest ooxx\n /lpic to get latest pic\n\n/sooxx to subscribe ooxx\n/spic to subscribe pic\n\n/uooxx to unsubscribe ooxx\n/upic to unsubscribe pic"
 
 	bot.ReplyText(message.Chat.ID, help)
 }
 
-func (bot *Bot) getShortHelp(message *Message) {
+func (bot *TBot) getShortHelp(message *Message) {
 	help := "/ip to check IP \n\n/ooxx to get random ooxx\n\n/pic to get random pic"
 	bot.ReplyText(message.Chat.ID, help)
 }
 
-func (bot *Bot) getIP(message *Message) {
+func (bot *TBot) getIP(message *Message) {
 	res, err := http.Get("http://wtfismyip.com/text")
 	if err != nil {
 		logger.Error("Get IP failed: " + err.Error())
@@ -44,25 +45,15 @@ func (bot *Bot) getIP(message *Message) {
 
 }
 
-func (bot *Bot) sendTopMessage(userid int, top jd.Comment) {
-	content := top.Content
-	if top.Type == jd.OOXX_TYPE {
-		content = "[OOXX]\n" + content
-	} else if top.Type == jd.PIC_TYPE {
-		content = "[Pic]\n" + content
-	}
-	bot.ReplyHTML(userid, content)
-}
+func (bot *TBot) getRandomOOXX(message *Message) {
 
-func (bot *Bot) getRandomOOXX(message *Message) {
-
-	content, err := bot.getRandomComment(jd.OOXX_TYPE)
+	content, err := bot.dispatcher.GetRandomJandan(jd.OOXX_TYPE)
 	if err != nil {
 		logger.Error("Get random comment failed: " + err.Error())
 		bot.ReplyError(message, err)
 	} else {
 		content = "[OOXX]\n" + content
-		_, err := bot.ReplyHTML(message.Chat.ID, content)
+		err := bot.ReplyHTML(message.Chat.ID, content)
 		if err != nil {
 			logger.Error("Reply random OOXX failed:" + err.Error())
 			bot.ReplyError(message, err)
@@ -72,14 +63,14 @@ func (bot *Bot) getRandomOOXX(message *Message) {
 	}
 }
 
-func (bot *Bot) getRandomPic(message *Message) {
-	content, err := bot.getRandomComment(jd.PIC_TYPE)
+func (bot *TBot) getRandomPic(message *Message) {
+	content, err := bot.dispatcher.GetRandomJandan(jd.PIC_TYPE)
 	if err != nil {
 		logger.Error("Get random Pic failed: " + err.Error())
 		bot.ReplyError(message, err)
 	} else {
 		content = "[Pic]\n" + content
-		_, err := bot.ReplyHTML(message.Chat.ID, content)
+		err := bot.ReplyHTML(message.Chat.ID, content)
 		if err != nil {
 			logger.Error("Reply random Pic failed:" + err.Error())
 			bot.ReplyError(message, err)
@@ -91,7 +82,7 @@ func (bot *Bot) getRandomPic(message *Message) {
 
 }
 
-func (bot *Bot) getLatestOOXX(message *Message) {
+func (bot *TBot) getLatestOOXX(message *Message) {
 	html, err := jd.GetLatestOOXX()
 	content := html.Content
 	if err != nil {
@@ -99,7 +90,7 @@ func (bot *Bot) getLatestOOXX(message *Message) {
 		bot.ReplyError(message, err)
 	} else {
 		content = "[OOXX]\n" + content
-		_, err := bot.ReplyHTML(message.Chat.ID, content)
+		err := bot.ReplyHTML(message.Chat.ID, content)
 		if err != nil {
 			logger.Error("Reply Latest OOXX failed:" + err.Error())
 			bot.ReplyError(message, err)
@@ -110,7 +101,7 @@ func (bot *Bot) getLatestOOXX(message *Message) {
 	}
 }
 
-func (bot *Bot) getLatestPic(message *Message) {
+func (bot *TBot) getLatestPic(message *Message) {
 	html, err := jd.GetLatestPic()
 	content := html.Content
 	if err != nil {
@@ -118,7 +109,7 @@ func (bot *Bot) getLatestPic(message *Message) {
 		bot.ReplyError(message, err)
 	} else {
 		content = "[Pic]\n" + content
-		_, err := bot.ReplyHTML(message.Chat.ID, content)
+		err := bot.ReplyHTML(message.Chat.ID, content)
 		if err != nil {
 			logger.Error("Reply Latest Pic failed:" + err.Error())
 			bot.ReplyError(message, err)
@@ -128,9 +119,18 @@ func (bot *Bot) getLatestPic(message *Message) {
 	}
 }
 
-func (bot *Bot) subscribeOOXX(message *Message) {
-	err := bot.registerUser(message)
-	err = bot.subscribeOOXXInDB(message)
+func (bot *TBot) subscribePic(message *Message) {
+	err := bot.dispatcher.SubscribeJandanPic(bot.getUser(message))
+	if err != nil {
+		logger.Error("Subscribe Pic failed for " + message.From.FirstName + " " + message.From.LastName + ": " + err.Error())
+		bot.ReplyError(message, err)
+		return
+	}
+	bot.ReplyText(message.Chat.ID, "Success!")
+}
+
+func (bot *TBot) subscribeOOXX(message *Message) {
+	err := bot.dispatcher.SubscribeJandanOOXX(bot.getUser(message))
 	if err != nil {
 		logger.Error("Subscribe OOXX failed for " + message.From.FirstName + " " + message.From.LastName + ": " + err.Error())
 		bot.ReplyError(message, err)
@@ -139,11 +139,10 @@ func (bot *Bot) subscribeOOXX(message *Message) {
 	bot.ReplyText(message.Chat.ID, "Success!")
 }
 
-func (bot *Bot) subscribePic(message *Message) {
-	err := bot.registerUser(message)
-	err = bot.subscribePicInDB(message)
+func (bot *TBot) unsubscribePic(message *Message) {
+	err := bot.dispatcher.UnsubscribeJandanPic(bot.getUser(message))
 	if err != nil {
-		logger.Error("Subscribe Pic failed for " + message.From.FirstName + " " + message.From.LastName + ": " + err.Error())
+		logger.Error("Unubscribe Pic failed for " + message.From.FirstName + " " + message.From.LastName + ": " + err.Error())
 		bot.ReplyError(message, err)
 		return
 	}
@@ -151,9 +150,8 @@ func (bot *Bot) subscribePic(message *Message) {
 
 }
 
-func (bot *Bot) unsubscribeOOXX(message *Message) {
-	err := bot.registerUser(message)
-	err = bot.unsubscribeOOXXInDB(message)
+func (bot *TBot) unsubscribeOOXX(message *Message) {
+	err := bot.dispatcher.UnsubscribeJandanOOXX(bot.getUser(message))
 	if err != nil {
 		logger.Error("Unubscribe OOXX failed for " + message.From.FirstName + " " + message.From.LastName + ": " + err.Error())
 		bot.ReplyError(message, err)
@@ -162,14 +160,12 @@ func (bot *Bot) unsubscribeOOXX(message *Message) {
 	bot.ReplyText(message.Chat.ID, "Success!")
 }
 
-func (bot *Bot) unsubscribePic(message *Message) {
-	err := bot.registerUser(message)
-	err = bot.unsubscribePicInDB(message)
-	if err != nil {
-		logger.Error("Unubscribe Pic failed for " + message.From.FirstName + " " + message.From.LastName + ": " + err.Error())
-		bot.ReplyError(message, err)
-		return
+func (bot *TBot) getUser(message *Message) *model.User {
+	if message.Chat.Type == "private" {
+		return message.From
+	} else if message.Chat.Type == "group" {
+		chat := message.Chat
+		return &model.User{ID: chat.ID, FirstName: "", LastName: "", Username: chat.Title}
 	}
-	bot.ReplyText(message.Chat.ID, "Success!")
-
+	return message.From
 }
