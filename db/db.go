@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	_ "github.com/lib/pq"
-	jd "github.com/qsz13/ooxxbot/jandan"
 	"github.com/qsz13/ooxxbot/logger"
 	"os"
 	"strconv"
@@ -15,8 +14,9 @@ type DB struct {
 }
 
 func NewDB() *DB {
-	sqldb := initDBConn(os.Getenv("DATABASE_URL"))
-	return &DB{sqldb: sqldb}
+	db := &DB{sqldb: initDBConn(os.Getenv("DATABASE_URL"))}
+	db.CreateTable()
+	return db
 }
 
 func initDBConn(db_dsn string) *sql.DB {
@@ -41,78 +41,51 @@ func initDBConn(db_dsn string) *sql.DB {
 	return nil
 }
 
-func (db *DB) SaveJandanTops(tops []jd.Comment) {
-	sqlStr := "INSERT INTO jandan (id, content, category, oo, xx, top) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (id) DO UPDATE SET top=true;"
-
-	stmt, err := db.sqldb.Prepare(sqlStr)
-	defer stmt.Close()
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-
-	for _, comment := range tops {
-		_, err = stmt.Exec(comment.ID, comment.Content, strconv.Itoa(int(comment.Type)), strconv.Itoa(int(comment.OO)), strconv.Itoa(int(comment.XX)), false)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-
-	}
-
-	//format all vals at once
-	logger.Debug("Top Saved!")
-
+func (db *DB) CreateTable() {
+	db.createUserTable()
+	db.createSubscriptionTable()
+	db.createJandanTable()
 }
 
-func (db *DB) SaveJandanToDB(comments []jd.Comment) {
-	sqlStr := "INSERT INTO jandan (id, content, category, oo, xx, top) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (id) DO UPDATE SET content=excluded.content,category=excluded.category,oo=excluded.oo, xx=excluded.xx;"
-	stmt, err := db.sqldb.Prepare(sqlStr)
-	defer stmt.Close()
-
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-	for _, comment := range comments {
-		_, err = stmt.Exec(comment.ID, comment.Content, strconv.Itoa(int(comment.Type)), strconv.Itoa(int(comment.OO)), strconv.Itoa(int(comment.XX)), false)
-		if err != nil {
-			logger.Error(err.Error())
-		}
-	}
-	//format all vals at once
-	logger.Debug("Comment Saved!")
-
+func (db *DB) createUserTable() error {
+	logger.Debug("Create Table user")
+	sql_table := `
+	CREATE SEQUENCE IF NOT EXISTS user_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1;
+	CREATE TABLE IF NOT EXISTS "user" (
+	id int8 NOT NULL DEFAULT nextval('user_id_seq'::regclass),
+	first_name varchar(32),
+	last_name varchar(32),
+	user_name varchar(32),
+	constraint pk_user primary key (id)
+	) WITH (OIDS=FALSE);
+	CREATE UNIQUE INDEX IF NOT EXISTS "user_id_key" ON "user" USING btree("id" "pg_catalog"."int8_ops" ASC NULLS LAST);`
+	_, err := db.sqldb.Exec(sql_table)
+	return err
 }
 
-func (db *DB) GetRandomComment(jdType jd.JandanType) (string, error) {
-	content := ""
-	stmt, err := db.sqldb.Prepare("SELECT content FROM jandan WHERE category=$1 AND oo > 2*xx ORDER BY RANDOM() LIMIT 1;")
-	if err != nil {
-		logger.Error(err.Error())
-		return content, err
-	}
-	err = stmt.QueryRow(jdType).Scan(&content)
-	if err != nil {
-		logger.Error(err.Error())
-	}
-	return content, err
+func (db *DB) createSubscriptionTable() error {
+	logger.Debug("Create Table subscription")
+	sql_table := `CREATE TABLE IF NOT EXISTS subscription (
+	"user" int8 NOT NULL,
+	"ooxx" bool,
+	"pic" bool) WITH (OIDS=FALSE);
+	ALTER TABLE subscription ADD PRIMARY KEY ("user") NOT DEFERRABLE INITIALLY IMMEDIATE;
+	ALTER TABLE subscription ADD CONSTRAINT "subscribe-user" FOREIGN KEY ("user") REFERENCES "user" ("id") ON UPDATE NO ACTION ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE;`
+	_, err := db.sqldb.Exec(sql_table)
+	return err
 }
 
-func (db *DB) TopExists(top *jd.Comment) bool {
-	stmt, err := db.sqldb.Prepare("SELECT top from jandan where id = $1")
-	if err != nil {
-		logger.Error(err.Error())
-		return true
-	}
+func (db *DB) createJandanTable() error {
+	logger.Debug("Create Table jandan")
 
-	var isTop bool
-	err = stmt.QueryRow(top.ID).Scan(&isTop)
-	if err != nil {
-		return false
-	}
-	if isTop {
-		return true
-	}
-	return false
-
+	sql_table := `CREATE TABLE jandan (
+	"id" int4 NOT NULL,
+	"content" varchar(1024) NOT NULL COLLATE "default",
+	"category" varchar NOT NULL COLLATE "default",
+	"oo" int4,
+	"xx" int4,
+	"top" bool DEFAULT false) WITH (OIDS=FALSE);
+	ALTER TABLE jandan ADD PRIMARY KEY ("id") NOT DEFERRABLE INITIALLY IMMEDIATE;`
+	_, err := db.sqldb.Exec(sql_table)
+	return err
 }

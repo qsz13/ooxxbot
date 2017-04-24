@@ -36,7 +36,6 @@ func (spider *Spider) Start() {
 
 func (spider *Spider) topSpider() {
 	//firstTime := true
-	logger.Debug("!!!!!!!!!!!!!!!!!")
 	for {
 		logger.Debug("Jandan Spider is working!")
 		tops, err := jd.GetTop()
