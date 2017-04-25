@@ -45,26 +45,29 @@ func (db *DB) CreateTable() {
 	db.createUserTable()
 	db.createSubscriptionTable()
 	db.createJandanTable()
+	db.createSourceTable()
 }
 
 func (db *DB) createUserTable() error {
-	logger.Debug("Create Table user")
+	logger.Debug("Creating Table user")
 	sql_table := `
-	CREATE SEQUENCE IF NOT EXISTS user_id_seq INCREMENT 1 MINVALUE 1 MAXVALUE 9223372036854775807 START 1 CACHE 1;
 	CREATE TABLE IF NOT EXISTS "user" (
-	id int8 NOT NULL DEFAULT nextval('user_id_seq'::regclass),
+	id serial primary key,
 	first_name varchar(32),
 	last_name varchar(32),
-	user_name varchar(32),
-	constraint pk_user primary key (id)
+	user_name varchar(32)
 	) WITH (OIDS=FALSE);
-	CREATE UNIQUE INDEX IF NOT EXISTS "user_id_key" ON "user" USING btree("id" "pg_catalog"."int8_ops" ASC NULLS LAST);`
+	CREATE UNIQUE INDEX IF NOT EXISTS "user_id_key" ON "user" USING btree("id" "pg_catalog"."int4_ops" ASC NULLS LAST);`
 	_, err := db.sqldb.Exec(sql_table)
+
+	if err != nil {
+		logger.Debug(err)
+	}
 	return err
 }
 
 func (db *DB) createSubscriptionTable() error {
-	logger.Debug("Create Table subscription")
+	logger.Debug("Creating Table subscription")
 	sql_table := `CREATE TABLE IF NOT EXISTS subscription (
 	"user" int8 NOT NULL,
 	"ooxx" bool,
@@ -72,20 +75,43 @@ func (db *DB) createSubscriptionTable() error {
 	ALTER TABLE subscription ADD PRIMARY KEY ("user") NOT DEFERRABLE INITIALLY IMMEDIATE;
 	ALTER TABLE subscription ADD CONSTRAINT "subscribe-user" FOREIGN KEY ("user") REFERENCES "user" ("id") ON UPDATE NO ACTION ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE;`
 	_, err := db.sqldb.Exec(sql_table)
+	if err != nil {
+		logger.Debug(err)
+	}
+
 	return err
 }
 
 func (db *DB) createJandanTable() error {
-	logger.Debug("Create Table jandan")
+	logger.Debug("Creating Table jandan")
 
-	sql_table := `CREATE TABLE jandan (
-	"id" int4 NOT NULL,
-	"content" varchar(1024) NOT NULL COLLATE "default",
+	sql_table := `CREATE TABLE IF NOT EXISTS jandan (
+	"id" serial primary key,
+	"content" text NOT NULL COLLATE "default",
 	"category" varchar NOT NULL COLLATE "default",
 	"oo" int4,
 	"xx" int4,
-	"top" bool DEFAULT false) WITH (OIDS=FALSE);
-	ALTER TABLE jandan ADD PRIMARY KEY ("id") NOT DEFERRABLE INITIALLY IMMEDIATE;`
+	"top" bool DEFAULT false) WITH (OIDS=FALSE);`
 	_, err := db.sqldb.Exec(sql_table)
+	if err != nil {
+
+		logger.Debug(err)
+	}
+
+	return err
+}
+
+func (db *DB) createSourceTable() error {
+	logger.Debug("Create Table source")
+	sql_table := `CREATE TABLE IF NOT EXISTS source (
+	"id" serial primary key,
+	"name" varchar(1024),
+	"url" varchar(2048)
+	)`
+	_, err := db.sqldb.Exec(sql_table)
+	if err != nil {
+
+		logger.Debug(err)
+	}
 	return err
 }
