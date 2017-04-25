@@ -7,6 +7,7 @@ import (
 	"github.com/qsz13/ooxxbot/logger"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -92,9 +93,9 @@ func dataCleaning(content string) string {
 	content = strings.Replace(content, "<br/>", "\r\n", -1)
 	content = strings.TrimSpace(content)
 	content = strings.Replace(content, " target=\"_blank\" class=\"view_img_link\"", "", -1)
-	if !strings.Contains(content, "http://") {
-		content = strings.Replace(content, "//", "http://", -1)
-	}
+	reg, _ := regexp.Compile("(http:)?//*")
+	content = reg.ReplaceAllString(content, "http://")
+
 	return content
 }
 

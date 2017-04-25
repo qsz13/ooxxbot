@@ -141,6 +141,9 @@ func (bot *TBot) ExecCmd(message *Message) {
 	case "/upic":
 		go bot.unsubscribePic(message)
 		break
+	case "/srss":
+		bot.ReplyText(message.Chat.ID, "under construction.")
+		break
 	case "":
 		break
 	default:
