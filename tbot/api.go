@@ -88,7 +88,7 @@ func (bot *TBot) sendMessage(
 	if mr.Ok {
 		return mr.Result, nil
 	} else {
-		err = errors.New("Message failed, reason: " + mr.Description)
+		err = errors.New("Message failed, reason: " + mr.Description + ". " + text)
 		logger.Error(err.Error())
 		return nil, err
 	}

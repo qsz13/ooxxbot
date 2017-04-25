@@ -93,7 +93,7 @@ func dataCleaning(content string) string {
 	content = strings.Replace(content, "<br/>", "\r\n", -1)
 	content = strings.TrimSpace(content)
 	content = strings.Replace(content, " target=\"_blank\" class=\"view_img_link\"", "", -1)
-	reg, _ := regexp.Compile("(http:)?//*")
+	reg, _ := regexp.Compile("(http:)?/{2}")
 	content = reg.ReplaceAllString(content, "http://")
 
 	return content
