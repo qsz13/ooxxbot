@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	_ "github.com/lib/pq"
 	"github.com/qsz13/ooxxbot/logger"
-	"os"
 	"strconv"
 	"time"
 )
@@ -13,8 +12,8 @@ type DB struct {
 	sqldb *sql.DB
 }
 
-func NewDB() *DB {
-	db := &DB{sqldb: initDBConn(os.Getenv("DATABASE_URL"))}
+func NewDB(db_uri string) *DB {
+	db := &DB{sqldb: initDBConn(db_uri)}
 	db.CreateTable()
 	return db
 }

@@ -14,10 +14,10 @@ func main() {
 	fmt.Println("Welcome to OOXXBot")
 	parseArg()
 
-	db := db.NewDB()
+	db := db.NewDB(DATABASE_URL)
 	dispatcher := dp.NewDispatcher(db)
-	bot := tbot.NewBot(dispatcher, nil)
-	spider := spider.NewSpider(dispatcher, db)
+	bot := tbot.NewBot(TOKEN, dispatcher, nil)
+	spider := spider.NewSpider(dispatcher, db, SPIDER_INTERVAL)
 	spider.Start()
 	bot.Start()
 

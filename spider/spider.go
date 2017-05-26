@@ -5,26 +5,28 @@ import (
 	dp "github.com/qsz13/ooxxbot/dispatcher"
 	jd "github.com/qsz13/ooxxbot/jandan"
 	"github.com/qsz13/ooxxbot/logger"
-	"os"
-	"strconv"
+	//	"os"
+	//	"strconv"
 	"time"
 )
 
 type Spider struct {
 	dispatcher *dp.Dispatcher
 	db         *db.DB
+	interval   int
 }
 
-func NewSpider(dispatcher *dp.Dispatcher, db *db.DB) *Spider {
-	return &Spider{dispatcher: dispatcher, db: db}
+func NewSpider(dispatcher *dp.Dispatcher, db *db.DB, interval int) *Spider {
+	return &Spider{dispatcher: dispatcher, db: db, interval: interval}
 }
 
 func (spider *Spider) getInterval() int {
-	interval, err := strconv.Atoi(os.Getenv("SPIDER_INTERVAL"))
-	if err != nil {
-		interval = 600
-	}
-	return interval
+	//interval, err := strconv.Atoi(os.Getenv("SPIDER_INTERVAL"))
+	//if err != nil {
+	//		interval = 600
+	//	}
+
+	return spider.interval
 }
 
 func (spider *Spider) Start() {

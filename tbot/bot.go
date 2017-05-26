@@ -5,7 +5,6 @@ import (
 	"github.com/qsz13/ooxxbot/logger"
 	rc "github.com/qsz13/ooxxbot/requestclient"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 )
@@ -18,11 +17,11 @@ type TBot struct {
 	Queries    chan *InlineQuery
 }
 
-func NewBot(dispatcher *dp.Dispatcher, clientProxy *rc.ClientProxy) *TBot {
+func NewBot(token string, dispatcher *dp.Dispatcher, clientProxy *rc.ClientProxy) *TBot {
 	bot := new(TBot)
 	bot.dispatcher = dispatcher
 	bot.dispatcher.Bot = bot
-	bot.token = os.Getenv("TOKEN")
+	bot.token = token
 	bot.client, _ = rc.GetClient(clientProxy)
 	bot.Messages = make(chan *Message, 1000)
 	return bot
