@@ -22,4 +22,5 @@ type Comment struct {
 	OO      int        `json:"vote_positive,string"`
 	XX      int        `json:"vote_negative,string"`
 	Type    JandanType `json:"-"`
+	Link    string     `json:"-"`
 }

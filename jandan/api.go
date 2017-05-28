@@ -26,34 +26,33 @@ func parsePage() ([]Comment, error) {
 }
 
 func parseOOXXTop(doc *goquery.Document, tops *[]Comment) {
+
 	doc.Find("img").Remove()
 	doc.Find("div#list-girl div.in").Each(func(i int, s *goquery.Selection) {
 		s.Find("div.acv_comment").Each(func(i int, s *goquery.Selection) {
 			top := Comment{}
-			url, exist := s.Find("div.vote").Attr("id")
-			if !exist {
-				fmt.Println("Link not exists")
-				return
-			}
-			idStr := strings.Replace(url, "vote-", "", -1)
-			top.ID, _ = strconv.Atoi(idStr)
 			content, err := s.Find("p").Html()
 			if err != nil {
-				logger.Error("Error while parsing OOXX Top: " + err.Error())
+				fmt.Println("error parsing jandan frontpage:", err)
 				return
 			}
 			content = dataCleaning(content)
 			top.Content = content
 			top.Type = OOXX_TYPE
-			oo := s.Find("span#cos_support-" + idStr)
-			xx := s.Find("span#cos_unsupport-" + idStr)
-			top.OO, _ = strconv.Atoi(oo.Text())
-			top.XX, _ = strconv.Atoi(xx.Text())
-
 			*tops = append(*tops, top)
 		})
+		s.Find("div.acv_author").Each(func(i int, s *goquery.Selection) {
+			url, exist := s.Find("div.acv_author a").Attr("href")
+			if !exist {
+				fmt.Println("Link not exists, can't parse jandan front page.")
+				return
+			}
+			(*tops)[i].Link = url
+			r, _ := regexp.Compile("#comment-(.*)")
+			idStr := r.FindStringSubmatch(url)[1]
+			(*tops)[i].ID, _ = strconv.Atoi(idStr)
+		})
 	})
-
 }
 
 func parsePicTop(doc *goquery.Document, tops *[]Comment) {
@@ -61,30 +60,28 @@ func parsePicTop(doc *goquery.Document, tops *[]Comment) {
 	doc.Find("div#list-pic div.in").Each(func(i int, s *goquery.Selection) {
 		s.Find("div.acv_comment").Each(func(i int, s *goquery.Selection) {
 			top := Comment{}
-			url, exist := s.Find("div.vote").Attr("id")
-			if !exist {
-				fmt.Println("Link not exists")
-				return
-			}
-			idStr := strings.Replace(url, "vote-", "", -1)
-			top.ID, _ = strconv.Atoi(idStr)
 			content, err := s.Find("p").Html()
 			if err != nil {
-				fmt.Println(err)
+				fmt.Println("error parsing jandan frontpage:", err)
 				return
 			}
 			content = dataCleaning(content)
 			top.Content = content
 			top.Type = PIC_TYPE
-			oo := s.Find("span#cos_support-" + idStr)
-			xx := s.Find("span#cos_unsupport-" + idStr)
-			top.OO, _ = strconv.Atoi(oo.Text())
-			top.XX, _ = strconv.Atoi(xx.Text())
-
 			*tops = append(*tops, top)
 		})
+		s.Find("div.acv_author").Each(func(i int, s *goquery.Selection) {
+			url, exist := s.Find("div.acv_author a").Attr("href")
+			if !exist {
+				fmt.Println("Link not exists, can't parse jandan front page.")
+				return
+			}
+			(*tops)[i].Link = url
+			r, _ := regexp.Compile("#comment-(.*)")
+			idStr := r.FindStringSubmatch(url)[1]
+			(*tops)[i].ID, _ = strconv.Atoi(idStr)
+		})
 	})
-
 }
 
 func dataCleaning(content string) string {

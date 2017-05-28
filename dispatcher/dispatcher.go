@@ -73,7 +73,14 @@ func (dp *Dispatcher) sendJandanOOXXSubscription(suber []int, tops []jd.Comment)
 	for _, u := range suber {
 		for _, t := range tops {
 			if t.Type == jd.OOXX_TYPE {
-				content := "[OOXX]\n" + t.Content
+				content := t.Content
+				if len(t.Link) != 0 {
+					content = "<a href=\"" + t.Link + "\">[OOXX]</a>\n" + content
+
+				} else {
+					content = "[OOXX]\n" + content
+				}
+
 				logger.Debug("Sending: " + t.Content)
 				dp.Bot.ReplyHTML(u, content)
 			}
@@ -86,7 +93,13 @@ func (dp *Dispatcher) sendJandanPicSubscription(suber []int, tops []jd.Comment) 
 	for _, u := range suber {
 		for _, t := range tops {
 			if t.Type == jd.PIC_TYPE {
-				content := "[Pic]\n" + t.Content
+				content := t.Content
+				if len(t.Link) != 0 {
+					content = "<a href=\"" + t.Link + "\">[Pic]</a>\n" + content
+
+				} else {
+					content = "[Pic]\n" + content
+				}
 				logger.Debug("Sending: " + t.Content)
 				dp.Bot.ReplyHTML(u, content)
 			}
