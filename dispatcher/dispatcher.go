@@ -9,7 +9,7 @@ import (
 )
 
 type ITBot interface {
-	ReplyHTML(ChatID int, html string) error
+	ReplyHTMLWithTitle(ChatID int, title, html string) error
 }
 
 type Dispatcher struct {
@@ -73,16 +73,17 @@ func (dp *Dispatcher) sendJandanOOXXSubscription(suber []int, tops []jd.Comment)
 	for _, u := range suber {
 		for _, t := range tops {
 			if t.Type == jd.OOXX_TYPE {
+				title := ""
 				content := t.Content
 				if len(t.Link) != 0 {
-					content = "<a href=\"" + t.Link + "\">[OOXX]</a>\n" + content
+					title = "<a href=\"" + t.Link + "\">[OOXX]</a>\n"
 
 				} else {
 					content = "[OOXX]\n" + content
 				}
 
 				logger.Debug("Sending: " + t.Content)
-				dp.Bot.ReplyHTML(u, content)
+				dp.Bot.ReplyHTMLWithTitle(u, title, content)
 			}
 		}
 	}
@@ -93,15 +94,16 @@ func (dp *Dispatcher) sendJandanPicSubscription(suber []int, tops []jd.Comment) 
 	for _, u := range suber {
 		for _, t := range tops {
 			if t.Type == jd.PIC_TYPE {
+				title := ""
 				content := t.Content
 				if len(t.Link) != 0 {
-					content = "<a href=\"" + t.Link + "\">[Pic]</a>\n" + content
+					title = "<a href=\"" + t.Link + "\">[Pic]</a>\n"
 
 				} else {
 					content = "[Pic]\n" + content
 				}
 				logger.Debug("Sending: " + t.Content)
-				dp.Bot.ReplyHTML(u, content)
+				dp.Bot.ReplyHTMLWithTitle(u, title, content)
 			}
 		}
 	}

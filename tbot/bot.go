@@ -99,6 +99,15 @@ func (bot *TBot) ReplyHTML(ChatID int, html string) error {
 	return err
 }
 
+func (bot *TBot) ReplyHTMLWithTitle(ChatID int, title, html string) error {
+	if len(title) > 0 {
+		bot.sendMessage(ChatID, title, "HTML", true, false, -1)
+	}
+
+	return bot.ReplyHTML(ChatID, html)
+
+}
+
 func (bot *TBot) ReplyError(message *Message, err error) {
 	m := "sorry, sth wrong: " + err.Error()
 	bot.ReplyText(message.Chat.ID, m)
