@@ -27,6 +27,8 @@ func parsePage() ([]Comment, error) {
 
 func parseOOXXTop(doc *goquery.Document, tops *[]Comment) {
 
+	ooxxTops := make([]Comment, 0)
+
 	doc.Find("img").Remove()
 	doc.Find("div#list-girl div.in").Each(func(i int, s *goquery.Selection) {
 		s.Find("div.acv_comment").Each(func(i int, s *goquery.Selection) {
@@ -39,7 +41,7 @@ func parseOOXXTop(doc *goquery.Document, tops *[]Comment) {
 			content = dataCleaning(content)
 			top.Content = content
 			top.Type = OOXX_TYPE
-			*tops = append(*tops, top)
+			ooxxTops = append(ooxxTops, top)
 		})
 		s.Find("div.acv_author").Each(func(i int, s *goquery.Selection) {
 			url, exist := s.Find("div.acv_author a").Attr("href")
@@ -47,15 +49,17 @@ func parseOOXXTop(doc *goquery.Document, tops *[]Comment) {
 				fmt.Println("Link not exists, can't parse jandan front page.")
 				return
 			}
-			(*tops)[i].Link = url
+			ooxxTops[i].Link = url
 			r, _ := regexp.Compile("#comment-(.*)")
 			idStr := r.FindStringSubmatch(url)[1]
-			(*tops)[i].ID, _ = strconv.Atoi(idStr)
+			ooxxTops[i].ID, _ = strconv.Atoi(idStr)
 		})
 	})
+	*tops = append(*tops, ooxxTops...)
 }
 
 func parsePicTop(doc *goquery.Document, tops *[]Comment) {
+	picTops := make([]Comment, 0)
 	doc.Find("img").Remove()
 	doc.Find("div#list-pic div.in").Each(func(i int, s *goquery.Selection) {
 		s.Find("div.acv_comment").Each(func(i int, s *goquery.Selection) {
@@ -68,7 +72,7 @@ func parsePicTop(doc *goquery.Document, tops *[]Comment) {
 			content = dataCleaning(content)
 			top.Content = content
 			top.Type = PIC_TYPE
-			*tops = append(*tops, top)
+			picTops = append(picTops, top)
 		})
 		s.Find("div.acv_author").Each(func(i int, s *goquery.Selection) {
 			url, exist := s.Find("div.acv_author a").Attr("href")
@@ -76,12 +80,13 @@ func parsePicTop(doc *goquery.Document, tops *[]Comment) {
 				fmt.Println("Link not exists, can't parse jandan front page.")
 				return
 			}
-			(*tops)[i].Link = url
+			picTops[i].Link = url
 			r, _ := regexp.Compile("#comment-(.*)")
 			idStr := r.FindStringSubmatch(url)[1]
-			(*tops)[i].ID, _ = strconv.Atoi(idStr)
+			picTops[i].ID, _ = strconv.Atoi(idStr)
 		})
 	})
+	*tops = append(*tops, picTops...)
 }
 
 func dataCleaning(content string) string {
