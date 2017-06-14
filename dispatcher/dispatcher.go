@@ -22,8 +22,7 @@ func NewDispatcher(db *db.DB) *Dispatcher {
 }
 
 func (dp *Dispatcher) GetRandomJandan(jdType jd.JandanType) (string, error) {
-
-	return "", nil
+	return dp.db.GetRandomComment(jdType)
 }
 
 func (dp *Dispatcher) SubscribeJandanPic(user *model.User) error {

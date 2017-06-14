@@ -163,7 +163,7 @@ func getCommentByAPI(jdType JandanType) ([]Comment, error) {
 
 func cleanComment(content string) string {
 	content = strings.Replace(content, "<img src", "<a href", -1)
-	content = strings.Replace(content, "/>", ">查看原图</a>", -1)
+	content = strings.Replace(content, "/>", ">[查看原图]</a>", -1)
 	return content
 }
 
