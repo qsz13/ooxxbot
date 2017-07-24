@@ -53,6 +53,7 @@ func (db *DB) SaveJandanToDB(comments []jd.Comment) {
 func (db *DB) GetRandomComment(jdType jd.JandanType) (string, error) {
 	content := ""
 	stmt, err := db.sqldb.Prepare("SELECT content FROM jandan WHERE category=$1 AND oo > 2*xx ORDER BY RANDOM() LIMIT 1;")
+	defer stmt.Close()
 	if err != nil {
 		logger.Error(err.Error())
 		return content, err
@@ -66,6 +67,7 @@ func (db *DB) GetRandomComment(jdType jd.JandanType) (string, error) {
 
 func (db *DB) TopExists(top *jd.Comment) bool {
 	stmt, err := db.sqldb.Prepare("SELECT top from jandan where id = $1")
+	defer stmt.Close()
 	if err != nil {
 		logger.Error(err.Error())
 		return true
@@ -74,11 +76,8 @@ func (db *DB) TopExists(top *jd.Comment) bool {
 	var isTop bool
 	err = stmt.QueryRow(top.ID).Scan(&isTop)
 	if err != nil {
+		logger.Error("Query error in TopExists: "+err.Error())
 		return false
 	}
-	if isTop {
-		return true
-	}
-	return false
-
+	return isTop
 }

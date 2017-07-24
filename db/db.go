@@ -55,8 +55,7 @@ func (db *DB) createUserTable() error {
 	first_name varchar(32),
 	last_name varchar(32),
 	user_name varchar(32)
-	) WITH (OIDS=FALSE);
-	CREATE UNIQUE INDEX IF NOT EXISTS "user_id_key" ON "user" USING btree("id" "pg_catalog"."int4_ops" ASC NULLS LAST);`
+	) WITH (OIDS=FALSE);`
 	_, err := db.sqldb.Exec(sql_table)
 
 	if err != nil {
@@ -68,10 +67,9 @@ func (db *DB) createUserTable() error {
 func (db *DB) createSubscriptionTable() error {
 	logger.Debug("Creating Table subscription")
 	sql_table := `CREATE TABLE IF NOT EXISTS subscription (
-	"user" int8 NOT NULL,
+	"user" int8 primary key,
 	"ooxx" bool,
 	"pic" bool) WITH (OIDS=FALSE);
-	ALTER TABLE subscription ADD PRIMARY KEY ("user") NOT DEFERRABLE INITIALLY IMMEDIATE;
 	ALTER TABLE subscription ADD CONSTRAINT "subscribe-user" FOREIGN KEY ("user") REFERENCES "user" ("id") ON UPDATE NO ACTION ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE;`
 	_, err := db.sqldb.Exec(sql_table)
 	if err != nil {
