@@ -42,7 +42,7 @@ func (bot *TBot) getUpdates(offset, limit, timeout int) ([]Update, error) {
 	}
 	body, err := bot.sendGET("getUpdates", params)
 	if err != nil {
-		logger.Error("Request API getUpdates failed: " + err.Error())
+		logger.Debug("Request API getUpdates failed: " + err.Error())
 		return nil, err
 	}
 	var ur UpdateResult
@@ -110,7 +110,7 @@ func (bot *TBot) sendGET(method string, params map[string]string) ([]byte, error
 	//logger.Debug("Get request to: " + urladdr)
 	res, err := bot.client.Get(urladdr)
 	if err != nil {
-		logger.Error("Request for " + urladdr + " failed: " + err.Error())
+		logger.Debug("Request for " + urladdr + " failed: " + err.Error())
 		return nil, err
 	}
 	defer res.Body.Close()

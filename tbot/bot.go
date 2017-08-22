@@ -45,7 +45,7 @@ func (bot *TBot) loop(messages chan *Message, queries chan *InlineQuery) {
 
 		updates, err := bot.getUpdates(lastUpdate+1, 0, 1000) //TBD
 		if err != nil {
-			logger.Error("Get telegram updates failed: " + err.Error())
+			logger.Debug("Get telegram updates failed: " + err.Error())
 			continue
 		}
 		maxid := lastUpdate
